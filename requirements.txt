@@ -1,0 +1,14 @@
+#list all of the packages that are required for the project to run
+#any time you add an import to your code, you should add the package to this file
+#you can generate this file by running `pip freeze > requirements.txt` in your terminal
+
+Flask==2.3.2          
+Flask-SQLAlchemy==3.0.5
+PyMySQL==1.0.2
+Werkzeug==2.3.3
+PyJWT==2.6.0
+Flask-SocketIO==5.3.2
+flask-jwt-extended==4.4.4
+flask-cors
+gunicorn==20.0.4
+gevent
