@@ -1,0 +1,3 @@
+[submodule "Flask_App_Template"]
+	path = Flask_App_Template
+	url = https://github.com/drjasonnichols/Flask_App_Template.git
