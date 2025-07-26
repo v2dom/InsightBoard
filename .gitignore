@@ -9,8 +9,7 @@ __pycache__/
 # Ignore Flask instance folder
 instance/
 
-admin_posts.json
-pending_approval.json
+posts.json
 
 # Ignore config.py (configuration files)
 

@@ -15,12 +15,17 @@ is_admin = True
 # Arizona Time Zone
 az = pytz.timezone("US/Arizona")
 
+# Path Configuration
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FRONTEND_DIR = os.path.join(BASE_DIR, "..", "frontend")
+POSTS_FILE = os.path.join(BASE_DIR, "posts.json")
+
 # Anonymous Feedback
 @app.route("/create-feedback", methods=["GET"])
 def serve_feedback_form():
     if not is_logged_in:
         return "Please log in to submit feedback.", 403
-    return send_file("feedback.html")
+    return send_file(os.path.join(FRONTEND_DIR, "feedback.html"))
 
 @app.route("/submit-feedback", methods=["POST", "OPTIONS"])
 def submit_feedback():
@@ -35,20 +40,19 @@ def submit_feedback():
         "category": data.get("category"),
         "content": data.get("content"),
         "timestamp": datetime.now(az).strftime("%m/%d/%Y %H:%M:%S"),
-        "approved": False
+        "status": "pending",
+        "upvotes": 0
     }
 
-    file = "pending_approval.json"
-    feedback_list = []
+    posts = []
+    if os.path.exists(POSTS_FILE):
+        with open(POSTS_FILE, "r") as f:
+            posts = json.load(f)
 
-    if os.path.exists(file):
-        with open(file, "r") as f:
-            feedback_list = json.load(f)
+    posts.append(feedback_entry)
 
-    feedback_list.append(feedback_entry)
-
-    with open(file, "w") as f:
-        json.dump(feedback_list, f, indent=4)
+    with open(POSTS_FILE, "w") as f:
+        json.dump(posts, f, indent=4)
 
     return jsonify({"status": "success", "message": "Feedback received"}), 200
 
@@ -57,7 +61,7 @@ def submit_feedback():
 def serve_create_post():
     if not (is_logged_in and is_admin):
         return "Access denied. Admins only.", 403
-    return send_file("adminpost.html")
+    return send_file(os.path.join(FRONTEND_DIR, "adminpost.html"))
 
 @app.route("/create-post", methods=["POST"])
 def handle_create_post():
@@ -71,22 +75,43 @@ def handle_create_post():
         "category": category,
         "content": content,
         "timestamp": datetime.now(az).strftime("%m/%d/%Y %H:%M:%S"),
-        "approved": True
+        "status": "admin",
+        "upvotes": 0
     }
 
-    file = "admin_posts.json"
     posts = []
-
-    if os.path.exists(file):
-        with open(file, "r") as f:
+    if os.path.exists(POSTS_FILE):
+        with open(POSTS_FILE, "r") as f:
             posts = json.load(f)
 
     posts.append(post_entry)
 
-    with open(file, "w") as f:
+    with open(POSTS_FILE, "w") as f:
         json.dump(posts, f, indent=4)
 
     return jsonify({"status": "success", "message": "Post submitted successfully!"})
+
+# View Posts
+@app.route("/api/approved_posts", methods=["GET"])
+def get_approved_posts():
+    if not os.path.exists(POSTS_FILE):
+        return jsonify([])
+
+    with open(POSTS_FILE, "r") as f:
+        all_posts = json.load(f)
+
+    visible_posts = [
+        p for p in all_posts if p.get("status") in ("approved", "admin")
+    ]
+    visible_posts.sort(key=lambda x: x.get("upvotes", 0), reverse=True)
+
+    return jsonify(visible_posts)
+
+@app.route("/feed", methods=["GET"])
+def serve_feed():
+    if not is_logged_in:
+        return "Access denied. Please log in to view the feed.", 403
+    return send_file(os.path.join(FRONTEND_DIR, "feed.html"))
 
 @app.route("/")
 def home():
