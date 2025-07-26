@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+</body>
+</html>
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Create / Submit Feedback</h2>
+<form method="post">
+  <textarea name="content" placeholder="Your feedback…" required></textarea><br><br>
+  <button>Submit</button>
+</form>
+{% endblock %}
