@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+</body>
+</html>
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Approved Posts</h2>
+{% for p in posts %}
+  <div class="card">
+    <p>{{ p.content }}</p>
+    <small>Approved {{ p.reviewed_at.strftime('%Y‑%m‑%d %H:%M') }}</small>
+  </div>
+{% else %}
+  <p>No approved posts yet.</p>
+{% endfor %}
+{% endblock %}

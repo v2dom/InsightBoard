@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Declined Posts</h2>
+{% for p in posts %}
+  <div class="card">
+    <p>{{ p.content }}</p>
+    <small>Declined {{ p.reviewed_at.strftime('%Y‑%m‑%d %H:%M') }}</small>
+    {% if p.review_msg %}
+    <small><br>Reason: {{ p.review_msg }}</small>
+    {% endif %}
+  </div>
+{% else %}
+  <p>No declined posts.</p>
+{% endfor %}
+{% endblock %}
+</body>
+</html>

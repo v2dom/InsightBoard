@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+</body>
+</html>
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Pending Posts</h2>
+{% for p in posts %}
+  <div class="card">
+    <p>{{ p.content }}</p>
+    <small>Submitted {{ p.submitted_at.strftime('%Y‑%m‑%d %H:%M') }}</small><br><br>
+    <form action="{{ url_for('approve', pid=p.id) }}" method="post" style="display:inline;">
+      <button>Approve</button>
+    </form>
+    <form action="{{ url_for('decline', pid=p.id) }}" method="post" style="display:inline;">
+      <button>Decline</button>
+    </form>
+  </div>
+{% else %}
+  <p>No pending posts 🎉</p>
+{% endfor %}
+{% endblock %}
