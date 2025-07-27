@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard</title>
+  <style>
+    #popup {
+      display: none;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+    #popup.success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    #popup.error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Alert Pop up -->
+  <div id="popup"><span id="popup-message"></span></div>
+
+  <!--Dashboard -->
+  <div id="dashboard-section">
+    <h2>Admin Dashboard</h2>
+    <button onclick="showForm()">Create New Account</button>
+  </div>
+
+  <!-- Account Creation Form -->
+  <div id="form-section" style="display: none;">
+    <h2>Create User Account [Admin]</h2>
+
+    <form id="accountForm">
+      <label for="first_name">First Name:</label><br>
+      <input type="text" name="first_name" id="first_name" required><br><br>
+
+      <label for="last_name">Last Name:</label><br>
+      <input type="text" name="last_name" id="last_name" required><br><br>
+
+      <label for="email">Email:</label><br>
+      <input type="email" name="email" id="email" required><br><br>
+
+      <label for="role">Role:</label><br>
+      <input type="text" name="role" id="role" required><br><br>
+
+      <button type="submit">Create Account</button>
+    </form>
+
+    <br>
+    <button onclick="showDashboard()">Back to Dashboard</button>
+  </div>
+
+  <script>
+    function showForm() {
+      document.getElementById("dashboard-section").style.display = "none";
+      document.getElementById("form-section").style.display = "block";
+    }
+
+    function showDashboard() {
+      document.getElementById("form-section").style.display = "none";
+      document.getElementById("dashboard-section").style.display = "block";
+    }
+
+ //Handle form submit event 
+    document.getElementById("accountForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const form = e.target;
+      const data = new FormData(form);
+
+      try {
+        const res = await fetch("/create-account", {
+          method: "POST",
+          body: data
+        });
+
+        const result = await res.json();
+
+        const popup = document.getElementById("popup");
+        const message = document.getElementById("popup-message");
+
+        if (res.ok && result.status === "success") {
+          popup.className = "success";
+          message.innerText = result.message;
+          form.reset(); // Clear the form
+        } else {
+          popup.className = "error";
+          message.innerText = result.message || "Something went wrong.";
+        }
+
+        popup.style.display = "block";
+
+        // Timeout popup
+        setTimeout(() => {
+          popup.style.display = "none";
+        }, 3000);
+
+      } catch (err) {
+        console.error(err);
+        const popup = document.getElementById("popup");
+        const message = document.getElementById("popup-message");
+        popup.className = "error";
+        message.innerText = "Server error. Please try again.";
+        popup.style.display = "block";
+      }
+    });
+  </script>
+</body>
+</html>
