@@ -10,7 +10,6 @@ import datetime
 from flask import Blueprint, current_app, request, jsonify, render_template
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import decode_token
-from extensions import db  # Import db from the newly created extensions.py file
 import jwt
 
 # IMPORTANT: import any objects from your model.py file that you need to work with here

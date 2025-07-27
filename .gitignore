@@ -4,7 +4,7 @@ __pycache__/
 *$py.class
 
 # Ignore virtual environment folder
-.venv/
+admin-posts/.venv/
 
 # Ignore Flask instance folder
 instance/
