@@ -27,26 +27,9 @@
     <meta name="theme-color" content="#1a1a1a">
 </head>
 <body>
-    Your app here!
-
-    <!-- Create a baselayout for your page here
-            - You can hand this page to chatgpt, tell it you are building
-                an app using bootstrap, describe the layout you want, and let
-                add the html for your layout to this part of the page
-            - Focus on the base layout for this part, don't worry about any
-                pop-up windows (known as modals) in your discussion with
-                chatgpt, just focus on the page layout
-    -->
-
-
-
-     <!-- Place modal windows here below your base layout
-            - You can tell chatgpt you are creating a bootsrrap page and
-                would like to add a modal window to your page.  Then
-                describe the modal window you want to add to your page
-                and let chatgpt generate the html for you.  Then
-                add that html to this part of the page
-    -->
+    <h1>Welcome to InsightBoard!</h1>
+    <a href="{{ url_for('auth.login_page') }}">Login</a>
+    
 
 </body>
 </html>

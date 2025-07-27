@@ -1,12 +1,11 @@
 # Description: This file is the entry point for the Flask application.
-# IMPORATNT: There are two areas below you need to uncomment if you want
-#            to use websockets.
 
+from gevent import monkey
+monkey.patch_all()
 import os
 from flask import Flask
 from extensions import db, socketio, jwt, cors
-from gevent import monkey
-monkey.patch_all()
+
 
 # Try to import the Config class from config.py (only if it exists)
 try:
@@ -26,36 +25,32 @@ def create_app():
         app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', Config.SECRET_KEY)
     else:
         app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
-        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = os.getenv('SQLALCHEMY_TRACK_MODIFICATIONS', False)  # Default to False
-        app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default-secret-key')  # Provide a default or ensure it's set in production
+        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = os.getenv('SQLALCHEMY_TRACK_MODIFICATIONS', False)
+        app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default-secret-key')
 
-    # Initialize extensions within the app context.
+    # Initialize extensions
     db.init_app(app)
-
-    # UNCOMMENT THIS IF YOU WANT TO USE WEBSOCKETS!
-    #socketio.init_app(app, async_mode='gevent')
-
     jwt.init_app(app)
     cors.init_app(app)
+    # socketio.init_app(app, async_mode='gevent')  # Optional, only if using websockets
 
-    # Register blueprints for routing.
-    from routes import routes_blueprint
-    app.register_blueprint(routes_blueprint)
+    # Import and register blueprints here (inside app context)
+    from auth_routes import auth_bp
+    from routes import routes_bp
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(routes_bp)
 
-    # Create tables if they don't exist.
     with app.app_context():
         db.create_all()
 
-    # UNCOMMENT THIS IF YOU WANT TO USE WEBSOCKETS!
-    # Register WebSocket event handlers.
-    #from websockets import register_websocket_handlers
-    #register_websocket_handlers(socketio)
-
     return app
 
-
-# Create the app instance.
+# Create the app instance
 app = create_app()
 
-# Passenger WSGI expects `app` to be the WSGI callable.
-# No need to call `socketio.run()` here since Passenger takes care of starting the app.
+# If running locally
+if __name__ == '__main__':
+    app.run(debug=True)
+    
+# If using websockets with gevent: use socketio.run(app) instead of Flask’s app.run()
+# But for deployment with Passenger or gunicorn, don't run it here.
