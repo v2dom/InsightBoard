@@ -9,9 +9,11 @@ admin-posts/.venv/
 # Ignore Flask instance folder
 instance/
 
+posts.json
+
 # Ignore config.py (configuration files)
 
 #UNCOMMENT THIS BEFORE YOU PUSH TO YOUR OWN REPOSITORY!
-#config.py
+config.py
 
 .DS_Store

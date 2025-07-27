@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Anonymous Feedback - InsightBoard</title>
+  <style>
+    .error { color: red; }
+  </style>
+</head>
+<body>
+  <h2>Anonymous Feedback</h2>
+
+  <form id="feedbackForm">
+    <label for="category">Category:</label>
+    <select id="category" required>
+      <option value="">Select a category</option>
+      <option value="Question">Question</option>
+      <option value="Suggestion">Suggestion</option>
+      <option value="Concern">Concern</option>
+      <option value="Comment">Comment</option>
+      <option value="Complaint">Complaint</option>
+    </select>
+    <br><br>
+
+    <label for="content">Your Feedback:</label><br>
+    <textarea id="content" rows="5" cols="50" required></textarea>
+    <br><br>
+
+    <button type="submit">Submit</button>
+    <p id="message" class="error"></p>
+  </form>
+
+  <script>
+    document.getElementById("feedbackForm").addEventListener("submit", async function(event) {
+      event.preventDefault();
+
+      const form = event.target;
+      const category = document.getElementById("category").value;
+      const content = document.getElementById("content").value.trim();
+      const message = document.getElementById("message");
+
+      if (!category || !content) {
+        message.textContent = "Please select a category and enter feedback.";
+        return;
+      }
+
+      try {
+        const response = await fetch("http://localhost:5001/submit-feedback", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ category, content })
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.status === "success") {
+          message.style.color = "green";
+          message.textContent = "Thank you! Your feedback has been submitted.";
+          form.reset();
+        } else {
+          message.style.color = "red";
+          message.textContent = result.message || "An error occurred.";
+        }
+      } catch (err) {
+        message.style.color = "red";
+        message.textContent = "Could not connect to server.";
+      }
+    });
+  </script>
+</body>
+</html>
