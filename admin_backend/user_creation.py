@@ -1,8 +1,8 @@
-<<<<<<< HEAD
+# <<<<<<< HEAD (<<< had to comment this, errors show -Khanh)
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from datetime import datetime
-import pytz
+# import pytz (<<< this import isn't working on my end -Khanh)
 import json
 import os
 
@@ -14,7 +14,7 @@ is_logged_in = True
 is_admin = True
 
 # Arizona Time Zone
-az = pytz.timezone("US/Arizona")
+# az = pytz.timezone("US/Arizona") (<<< get the datetime function for this -Khanh)
 
 # Path Configuration
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -120,7 +120,7 @@ def home():
 
 if __name__ == "__main__":
     app.run(port=5001, debug=True)
-=======
+# =======
 from flask import Flask, request, jsonify
 import os, json, uuid, random, string
 from flask import send_from_directory
@@ -178,4 +178,4 @@ def create_account():
 
 if __name__ == "__main__":
     app.run(debug=True)
->>>>>>> 1a17e33 (Add backend folder)
+# >>>>>>> 1a17e33 (Add backend folder) (<<< had to comment this, errors show -Khanh)

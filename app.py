@@ -3,8 +3,8 @@
 from gevent import monkey
 monkey.patch_all()
 import os
-#from flask import Flask
-from routes import routes_blueprint
+from flask import Flask
+# from routes import routes_blueprint (<<< got an error here, commented for now -Khanh)
 from extensions import db, socketio, jwt, cors
 
 
