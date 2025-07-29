@@ -18,11 +18,15 @@
 </head>
 <body>
   <nav>
-    <a href="{{ url_for('pending') }}">Admin Queue</a>
-    <a href="{{ url_for('approved') }}">Approved Feed</a>
-    <a href="{{ url_for('declined') }}">Declined Posts</a>
-    <a href="{{ url_for('all_posts') }}">All Posts</a>
-    <a href="{{ url_for('submit_form') }}">Submit Feedback</a>
+    <nav>
+      <a href="{{ url_for('routes.admin_pending') }}">Admin Queue</a>
+      <a href="{{ url_for('routes.admin_approved') }}">Approved Feed</a>
+      <a href="{{ url_for('routes.admin_declined') }}">Declined Posts</a>
+      <a href="{{ url_for('routes.all_posts') }}">All Posts</a>
+      <a href="{{ url_for('routes.admin_submit_form') }}">Submit Feedback</a>
+    </nav>
+</nav>
+
   </nav>
   {% with msgs = get_flashed_messages() %}
     {% if msgs %}<div class="flash">{{ msgs[0] }}</div>{% endif %}

@@ -24,19 +24,31 @@
 <body>
 
   <!-- Alert Pop up -->
-  <div id="popup"><span id="popup-message"></span></div>
+  <div id="popup" aria-live="polite"><span id="popup-message"></span></div>
 
   <!--Dashboard -->
   <div id="dashboard-section">
     <h2>Admin Dashboard</h2>
+
+    <!-- Account -->
     <button onclick="showForm()">Create New Account</button>
+    <br><br>
+
+    <!-- Post Management -->
+    <h3>Post Management</h3>
+    <a href="/admin/create-post"><button>Create a Post</button></a><br><br>
+    <a href="/admin/approved"><button>View Approved Posts</button></a><br><br>
+    <a href="/admin/pending"><button>Review Pending Posts</button></a><br><br>
+    <a href="/admin/declined"><button>View Declined Posts</button></a><br><br>
+    <a href="/admin/all"><button>View All Posts</button></a><br><br>
+
   </div>
 
   <!-- Account Creation Form -->
   <div id="form-section" style="display: none;">
     <h2>Create User Account [Admin]</h2>
 
-    <form id="accountForm">
+    <form id="accountForm" action="/admin/create-account" method="POST">
       <label for="first_name">First Name:</label><br>
       <input type="text" name="first_name" id="first_name" required><br><br>
 
@@ -47,7 +59,10 @@
       <input type="email" name="email" id="email" required><br><br>
 
       <label for="role">Role:</label><br>
-      <input type="text" name="role" id="role" required><br><br>
+      <select name="role" id="role" required>
+        <option value="admin">Admin</option>
+        <option value="user">User</option>
+      </select>
 
       <button type="submit">Create Account</button>
     </form>
@@ -75,7 +90,7 @@
       const data = new FormData(form);
 
       try {
-        const res = await fetch("/create-account", {
+        const res = await fetch("/admin/create-account", {
           method: "POST",
           body: data
         });
@@ -99,7 +114,7 @@
         // Timeout popup
         setTimeout(() => {
           popup.style.display = "none";
-        }, 3000);
+        }, 60000);
 
       } catch (err) {
         console.error(err);

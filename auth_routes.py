@@ -1,10 +1,55 @@
-from flask import Blueprint, request, render_template, redirect, url_for, flash, session
+from flask import Blueprint, request, render_template, redirect, url_for, flash, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
-from model import User
+from model import User, Post
 from extensions import db
 from datetime import datetime, timedelta
+import uuid
+import random
+import string
+
+def generate_password(length=10):
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
 
 auth_bp = Blueprint('auth', __name__)
+
+# Admin Dashboard Page
+@auth_bp.route('/admin')
+def admin_dashboard():
+    if session.get('user_role') != 'admin':
+        return redirect(url_for('auth.login_page'))
+    return render_template('admindash.html')
+
+# Create New User
+@auth_bp.route('/admin/create-account', methods=['POST'])
+def create_account():
+    if session.get('user_role') != 'admin':
+        return jsonify({"status": "error", "message": "Unauthorized"}), 403
+
+    first_name = request.form.get('first_name')
+    last_name = request.form.get('last_name')
+    email = request.form.get('email')
+    role = request.form.get('role')
+    password = generate_password()
+
+    # Check for duplicate email
+    if User.query.filter_by(email=email).first():
+        return jsonify({"status": "error", "message": "Email already exists."}), 400
+
+    new_user = User(
+        id=str(uuid.uuid4()),
+        name=f"{first_name} {last_name}",  
+        email=email,
+        password=generate_password_hash(password),
+        role=role
+)
+
+    db.session.add(new_user)
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "message": f"Account for {email} created! Temporary password: {password}"
+    })
 
 # Show login form
 @auth_bp.route('/login', methods=['GET'])
@@ -56,10 +101,6 @@ def login():
 def user_dashboard():
     return render_template('dashboard.html', role='user')
 
-# Show admin dashboard
-@auth_bp.route('/admin')
-def admin_dashboard():
-    return render_template('dashboard.html', role='admin')
 
 # Logout
 @auth_bp.route('/logout')
@@ -67,3 +108,5 @@ def logout():
     session.clear()
     flash('You have been logged out.', 'info')
     return redirect(url_for('auth.login_page'))
+
+
