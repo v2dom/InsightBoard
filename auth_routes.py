@@ -3,7 +3,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from model import User, Post
 from extensions import db
 from datetime import datetime, timedelta
-import uuid
 import random
 import string
 
@@ -29,19 +28,21 @@ def create_account():
     last_name = request.form.get('last_name')
     email = request.form.get('email')
     role = request.form.get('role')
-    password = generate_password()
+    password = request.form.get('password')
+    if not password:
+        return jsonify({"status": "error", "message": "Password is required"}), 400
+
 
     # Check for duplicate email
     if User.query.filter_by(email=email).first():
         return jsonify({"status": "error", "message": "Email already exists."}), 400
 
     new_user = User(
-        id=str(uuid.uuid4()),
         name=f"{first_name} {last_name}",  
         email=email,
-        password=generate_password_hash(password),
+        password=generate_password_hash(password, method='pbkdf2:sha256'),
         role=role
-)
+    )
 
     db.session.add(new_user)
     db.session.commit()

@@ -26,10 +26,13 @@ def submit_feedback():
     new_post = Post(
         category=category,
         content=content,
-        timestamp=datetime.now(timezone.utc),
+        submitted_at=datetime.now(timezone.utc),
+        created_at=datetime.now(timezone.utc),
         status="pending",
-        upvotes=0
+        upvotes=0,
+        created_by = session.get("user_id") or 1
     )
+
     db.session.add(new_post)
     db.session.commit()
 
@@ -49,7 +52,7 @@ def get_approved_posts():
         {
             "category": p.category,
             "content": p.content,
-            "timestamp": p.timestamp.strftime("%m/%d/%Y %H:%M:%S"),
+            "timestamp": p.created_at.strftime("%m/%d/%Y %H:%M:%S") if p.created_at else "",
             "status": p.status,
             "upvotes": p.upvotes
         } for p in posts
@@ -80,10 +83,13 @@ def handle_create_post():
     new_post = Post(
         category=category,
         content=content,
-        timestamp=datetime.now(timezone.utc),
+        created_at=datetime.now(timezone.utc),
+        submitted_at=datetime.now(timezone.utc),
         status="admin",
-        upvotes=0
+        upvotes=0,
+        created_by=session.get("user_id") or 1  # Use actual user ID if available
     )
+
     db.session.add(new_post)
     db.session.commit()
 

@@ -18,6 +18,7 @@ class User(db.Model):
 
 class Post(db.Model):
     __tablename__ = 'posts'
+
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text)
     category = db.Column(db.String(50))
@@ -28,7 +29,12 @@ class Post(db.Model):
     submitted_at = db.Column(db.DateTime)
     reviewed_at = db.Column(db.DateTime, nullable=True)
     review_msg = db.Column(db.String(200))
+    
+    upvotes = db.Column(db.Integer, default=0)
+    downvotes = db.Column(db.Integer, default=0)
+
     created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref='posts')
+
 
 

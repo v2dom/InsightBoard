@@ -8,7 +8,7 @@
 
   <form id="postForm">
     <label for="category">Category:</label>
-    <select id="category" required>
+    <select id="category" name="category" required>
       <option value="">Select a category</option>
       <option value="HR">HR</option>
       <option value="Policy">Policy</option>
@@ -17,12 +17,13 @@
     <br><br>
 
     <label for="post">Post Content:</label><br>
-    <textarea id="post" rows="5" cols="50" required></textarea>
+    <textarea id="post" name="post" rows="5" cols="50" required></textarea>
     <br><br>
 
     <button type="submit">Publish</button>
     <p id="message"></p>
-  </form>
+</form>
+
 
   <script>
     document.getElementById("postForm").addEventListener("submit", async function(event) {
@@ -44,7 +45,7 @@
       formData.append("post", post);
 
       try {
-        const res = await fetch("http://localhost:5001/create-post", {
+        const res = await fetch("/admin/create-post", {
           method: "POST",
           body: formData
         });

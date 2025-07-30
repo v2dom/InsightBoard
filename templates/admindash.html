@@ -58,6 +58,10 @@
       <label for="email">Email:</label><br>
       <input type="email" name="email" id="email" required><br><br>
 
+      <!-- ✅ NEW -->
+      <label for="password">Password:</label><br>
+      <input type="password" name="password" id="password" required><br><br>
+
       <label for="role">Role:</label><br>
       <select name="role" id="role" required>
         <option value="admin">Admin</option>
@@ -126,5 +130,10 @@
       }
     });
   </script>
+
+  <form action="{{ url_for('auth.logout') }}" method="GET" style="margin-top: 20px;">
+      <button type="submit">Logout</button>
+  </form>
+
 </body>
 </html>
