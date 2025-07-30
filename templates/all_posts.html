@@ -13,11 +13,12 @@
 {% block content %}
 <h2>All Posts</h2>
 <div style="margin-bottom:20px;">
-  <a href="{{ url_for('all_posts') }}">All</a> |
-  <a href="{{ url_for('all_posts', status='Pending') }}">Pending</a> |
-  <a href="{{ url_for('all_posts', status='Approved') }}">Approved</a> |
-  <a href="{{ url_for('all_posts', status='Declined') }}">Declined</a>
+  <a href="{{ url_for('routes.all_posts') }}">All</a> |
+  <a href="{{ url_for('routes.all_posts', status='Pending') }}">Pending</a> |
+  <a href="{{ url_for('routes.all_posts', status='Approved') }}">Approved</a> |
+  <a href="{{ url_for('routes.all_posts', status='Declined') }}">Declined</a>
 </div>
+
 {% for p in posts %}
   <div class="card">
     <p>{{ p.content }}</p>
@@ -33,10 +34,10 @@
     </div>
     {% if p.status == 'Pending' %}
     <div style="margin-top:10px;">
-      <form action="{{ url_for('approve', pid=p.id) }}" method="post" style="display:inline;">
+      <form action="{{ url_for('routes.approve_post', pid=p.id) }}" method="post">
         <button>Approve</button>
       </form>
-      <form action="{{ url_for('decline', pid=p.id) }}" method="post" style="display:inline;">
+      <form action="{{ url_for('routes.decline_post', pid=p.id) }}" method="post">
         <button>Decline</button>
       </form>
     </div>
