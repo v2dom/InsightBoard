@@ -16,6 +16,13 @@ def home():
     
 @routes_bp.route("/submit-feedback", methods=["POST"])
 def submit_feedback():
+    if not session.get("user_id"):
+        return jsonify({"status": "error", "message": "You must be logged in to submit feedback."}), 401
+    
+    # Admins cannot submit feedback
+    if session.get('user_role') == 'admin':
+        return jsonify({"status": "error", "message": "Admin users cannot submit anonymous feedback."}), 403
+    
     data = request.get_json()
     category = data.get("category")
     content = data.get("content")
@@ -36,12 +43,21 @@ def submit_feedback():
     db.session.add(new_post)
     db.session.commit()
 
-    return jsonify({"status": "success", "message": "Feedback received"})
+    return jsonify({"status": "success", "message": "Thank you for your feedback! It has been submitted and is now pending approval."})
 
 
 @routes_bp.route("/feedback", methods=["GET"])
 def serve_feedback_form():
-    return render_template("feedback.html")
+    if not session.get("user_id"):
+        flash("You must be logged in to submit feedback.", "error")
+        return redirect(url_for('auth.login_page'))
+    
+    # Block admin users from submitting anonymous feedback
+    if session.get('user_role') == 'admin':
+        flash("Admin users cannot submit anonymous feedback.", "error")
+        return redirect(url_for('auth.user_dashboard'))
+    
+    return render_template("submit.html")
 
 
 @routes_bp.route("/api/approved_posts", methods=["GET"])
@@ -143,6 +159,23 @@ def admin_submit_form():
         flash("Post submitted for review.")
         return redirect(url_for('routes.admin_submit_form'))
     return render_template("submit.html")
+
+# User Dashboard
+@routes_bp.route("/userdash")
+def user_dashboard():
+    if not session.get("user_id"):
+        return redirect(url_for('auth.login_page'))
+    
+    user_id = session["user_id"]
+    
+    approved_posts = Post.query.filter_by(created_by=user_id, status="Approved").order_by(Post.submitted_at.desc()).all()
+    pending_posts = Post.query.filter_by(created_by=user_id, status="Pending").order_by(Post.submitted_at.desc()).all()
+    declined_posts = Post.query.filter_by(created_by=user_id, status="Declined").order_by(Post.submitted_at.desc()).all()
+    
+    return render_template("userdash.html", 
+                         approved_posts=approved_posts,
+                         pending_posts=pending_posts,
+                         declined_posts=declined_posts)
 
 
 

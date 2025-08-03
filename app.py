@@ -1,7 +1,7 @@
 # Description: This file is the entry point for the Flask application.
 
-from gevent import monkey
-monkey.patch_all()
+# from gevent import monkey
+# monkey.patch_all()
 import os
 from flask import Flask
 # from routes import routes_blueprint (<<< got an error here, commented for now -Khanh)
@@ -25,7 +25,7 @@ def create_app():
         app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = os.getenv('SQLALCHEMY_TRACK_MODIFICATIONS', Config.SQLALCHEMY_TRACK_MODIFICATIONS)
         app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', Config.SECRET_KEY)
     else:
-        app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
+        app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:///instance/app.db')
         app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = os.getenv('SQLALCHEMY_TRACK_MODIFICATIONS', False)
         app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default-secret-key')
 

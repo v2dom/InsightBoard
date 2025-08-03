@@ -1,71 +1,155 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Create Post - InsightBoard</title>
-</head>
-<body>
-  <h2>Create Post [Admin]</h2>
+{% extends "base.html" %}
 
-  <form id="postForm">
-    <label for="category">Category:</label>
-    <select id="category" name="category" required>
-      <option value="">Select a category</option>
-      <option value="HR">HR</option>
-      <option value="Policy">Policy</option>
-      <option value="Culture">Culture</option>
-    </select>
-    <br><br>
+{% block content %}
+<div class="feedback-container">
+  <h2>Create Admin Post</h2>
+  
+  <div class="feedback-form-container">
+    <form id="postForm">
+      <div class="form-group">
+        <label for="category">Category:</label>
+        <select id="category" name="category" required>
+          <option value="">Select a category</option>
+          <option value="HR">HR</option>
+          <option value="Policy">Policy</option>
+          <option value="Culture">Culture</option>
+        </select>
+      </div>
 
-    <label for="post">Post Content:</label><br>
-    <textarea id="post" name="post" rows="5" cols="50" required></textarea>
-    <br><br>
+      <div class="form-group">
+        <label for="post">Post Content:</label>
+        <textarea id="post" name="post" rows="5" cols="50" required placeholder="Post goeshere..."></textarea>
+      </div>
 
-    <button type="submit">Publish</button>
-    <p id="message"></p>
-</form>
+      <button type="submit" class="btn btn-primary">Publish</button>
+      <p id="message" class="error"></p>
+    </form>
+  </div>
+</div>
 
+<style>
+.feedback-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
 
-  <script>
-    document.getElementById("postForm").addEventListener("submit", async function(event) {
-      event.preventDefault();
+.feedback-form-container {
+  background-color: #f8f9fa;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
 
-      const form = event.target;
-      const category = document.getElementById("category").value;
-      const post = document.getElementById("post").value.trim();
-      const message = document.getElementById("message");
+.form-group {
+  margin-bottom: 20px;
+}
 
-      if (!category || !post) {
-        message.style.color = "red";
-        message.innerText = "Please select a category and enter post content.";
-        return;
-      }
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #333;
+}
 
-      const formData = new FormData();
-      formData.append("category", category);
-      formData.append("post", post);
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
 
-      try {
-        const res = await fetch("/admin/create-post", {
-          method: "POST",
-          body: formData
-        });
+.form-group textarea {
+  resize: vertical;
+  min-height: 120px;
+}
 
-        const result = await res.json();
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
 
-        if (res.ok && result.status === "success") {
-          message.style.color = "green";
-          message.innerText = result.message;
-          form.reset();
-        } else {
-          message.style.color = "red";
-          message.innerText = result.message || "Failed to submit post.";
-        }
-      } catch (err) {
-        console.error(err);
-        message.style.color = "red";
-        message.innerText = "Could not connect to server.";
-      }
+.btn {
+  display: inline-block;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 5px;
+  text-decoration: none;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+
+.error {
+  color: red;
+  margin-top: 15px;
+  font-weight: bold;
+}
+
+.success {
+  color: green;
+  margin-top: 15px;
+  font-weight: bold;
+}
+</style>
+
+<script>
+document.getElementById("postForm").addEventListener("submit", async function(event) {
+  event.preventDefault();
+
+  const form = event.target;
+  const category = document.getElementById("category").value;
+  const post = document.getElementById("post").value.trim();
+  const message = document.getElementById("message");
+
+  if (!category || !post) {
+    message.textContent = "Please select a category and enter post content.";
+    message.className = "error";
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("category", category);
+  formData.append("post", post);
+
+  try {
+    const res = await fetch("/admin/create-post", {
+      method: "POST",
+      body: formData
     });
-  </script>
-</body>
-</html>
+
+    const result = await res.json();
+
+    if (res.ok && result.status === "success") {
+      message.style.color = "green";
+      message.className = "success";
+      message.textContent = result.message;
+      form.reset();
+    } else {
+      message.style.color = "red";
+      message.className = "error";
+      message.textContent = result.message || "Failed to submit post.";
+    }
+  } catch (err) {
+    console.error(err);
+    message.style.color = "red";
+    message.className = "error";
+    message.textContent = "Could not connect to server.";
+  }
+});
+</script>
+{% endblock %}

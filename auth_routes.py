@@ -100,7 +100,19 @@ def login():
 # Show user dashboard
 @auth_bp.route('/dashboard')
 def user_dashboard():
-    return render_template('dashboard.html', role='user')
+    if not session.get("user_id"):
+        return redirect(url_for('auth.login_page'))
+    
+    feed_posts = Post.query.filter(Post.status.in_(["Approved", "Admin"])).order_by(Post.submitted_at.desc()).all()
+    
+    return render_template("userdash.html", feed_posts=feed_posts)
+
+# Show feedback form
+@auth_bp.route('/dashboard/feedback')
+def dashboard_feedback():
+    if not session.get("user_id"):
+        return redirect(url_for('auth.login_page'))
+    return render_template("submit.html")
 
 
 # Logout
