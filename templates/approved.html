@@ -1,13 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-
-</body>
-</html>
 {% extends "base.html" %}
 
 {% block content %}
@@ -15,9 +5,36 @@
 {% for p in posts %}
   <div class="card">
     <p>{{ p.content }}</p>
-    <small>Approved {{ p.reviewed_at.strftime('%Y‑%m‑%d %H:%M') }}</small>
+    <small>Approved {{ p.reviewed_at.strftime('%Y‑%m‑%d %H:%M') }}</small><br><br>
+    {% if show_report_count %}
+      <small>Reports: {{ p.report_count or 0 }}</small><br><br>
+    {% endif %}
+    {% if p.id not in reported_ids %}
+      <a href="/report/{{ p.id }}" class="btn btn-report">Report</a>
+    {% else %}
+      <em>You reported this post</em>
+    {% endif %}
   </div>
 {% else %}
   <p>No approved posts yet.</p>
 {% endfor %}
+
+<style>
+.btn-report {
+  background-color: #dc3545;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 12px;
+  transition: background-color 0.3s;
+  display: inline-block;
+}
+
+.btn-report:hover {
+  background-color: #c82333;
+  color: white;
+  text-decoration: none;
+}
+</style>
 {% endblock %}

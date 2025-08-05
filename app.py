@@ -29,6 +29,19 @@ def create_app():
         app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = os.getenv('SQLALCHEMY_TRACK_MODIFICATIONS', False)
         app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default-secret-key')
 
+    # Add MySQL connection pooling and timeout settings
+    if 'mysql' in app.config['SQLALCHEMY_DATABASE_URI']:
+        app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+            'pool_size': 10,
+            'pool_recycle': 3600,  # Recycle connections after 1 hour
+            'pool_pre_ping': True,  # Test connections before use
+            'connect_args': {
+                'connect_timeout': 60,
+                'read_timeout': 60,
+                'write_timeout': 60,
+            }
+        }
+
     # Initialize extensions
     db.init_app(app)
     jwt.init_app(app)

@@ -19,16 +19,30 @@
         {% for post in feed_posts %}
         <div class="card post-card">
           <div class="post-header">
-            <span class="category-badge">{{ post.category }}</span>
-            <span class="status-badge status-approved">{{ post.status }}</span>
+            <span class="category-badge">{{ post.category or 'Uncategorized' }}</span>
+            {% if post.status == 'admin' %}
+              <span class="status-badge status-admin">Admin Post</span>
+            {% else %}
+              <span class="status-badge status-approved">{{ post.status }}</span>
+            {% endif %}
           </div>
           <div class="post-content">
             <p>{{ post.content }}</p>
           </div>
           <div class="post-meta">
-            <small><strong>Submitted:</strong> {{ post.submitted_at.strftime('%m/%d/%Y %H:%M:%S') if post.submitted_at else 'N/A' }}</small>
+            <small><strong>Submitted:</strong> {{ post.created_at.strftime('%m/%d/%Y %H:%M:%S') if post.created_at else 'N/A' }}</small>
             {% if post.reviewed_at %}
             <br><small><strong>Reviewed:</strong> {{ post.reviewed_at.strftime('%m/%d/%Y %H:%M:%S') }}</small>
+            {% endif %}
+            {% if show_report_count %}
+            <br><small><strong>Reports:</strong> {{ post.report_count or 0 }}</small>
+            {% endif %}
+          </div>
+          <div class="post-actions">
+            {% if post.id not in reported_ids %}
+              <a href="/report/{{ post.id }}" class="btn btn-report">Report</a>
+            {% else %}
+              <em class="reported-text">You reported this post</em>
             {% endif %}
           </div>
         </div>
@@ -118,6 +132,38 @@
   border-radius: 4px;
   font-size: 12px;
   font-weight: bold;
+}
+
+.status-badge.status-admin {
+  background-color: #007bff;
+  color: white;
+}
+
+.post-actions {
+  margin-top: 10px;
+  text-align: right;
+}
+
+.btn-report {
+  background-color: #dc3545;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 12px;
+  transition: background-color 0.3s;
+}
+
+.btn-report:hover {
+  background-color: #c82333;
+  color: white;
+  text-decoration: none;
+}
+
+.reported-text {
+  color: #6c757d;
+  font-style: italic;
+  font-size: 12px;
 }
 
 .post-content {

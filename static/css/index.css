@@ -1,1 +1,58 @@
 /* Place index.html page specific styles */
+
+/* Admin interface styles */
+.card {
+    background: white;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.badge-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.badge-approved {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-declined {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.badge-flagged {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+button {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 5px;
+}
+
+button:hover {
+    background: #0056b3;
+}
+
+small {
+    color: #666;
+    font-size: 12px;
+}

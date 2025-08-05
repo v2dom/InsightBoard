@@ -35,6 +35,23 @@ class Post(db.Model):
 
     created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref='posts')
+    
+    # Track reports
+    report_count = db.Column(db.Integer, default=0)
+    reports = db.relationship('PostReport', backref='post', lazy='dynamic', cascade='all, delete-orphan')
+
+
+class PostReport(db.Model):
+    __tablename__ = 'post_reports'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)
+    reported_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    reason = db.Column(db.String(200), nullable=False)
+    reported_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Ensure one user can only report a post once
+    __table_args__ = (db.UniqueConstraint('post_id', 'reported_by', name='unique_user_post_report'),)
 
 
 

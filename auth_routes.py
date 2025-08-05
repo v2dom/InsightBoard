@@ -1,6 +1,6 @@
 from flask import Blueprint, request, render_template, redirect, url_for, flash, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
-from model import User, Post
+from model import User, Post, PostReport
 from extensions import db
 from datetime import datetime, timedelta
 import random
@@ -103,9 +103,30 @@ def user_dashboard():
     if not session.get("user_id"):
         return redirect(url_for('auth.login_page'))
     
-    feed_posts = Post.query.filter(Post.status.in_(["Approved", "Admin"])).order_by(Post.submitted_at.desc()).all()
+    user_id = session["user_id"]
+    user_role = session.get("user_role")
     
-    return render_template("userdash.html", feed_posts=feed_posts)
+    # Get all approved posts for the feed (not just user's own)
+    feed_posts = Post.query.filter(Post.status.in_(["Approved", "admin"]))\
+                          .order_by(Post.upvotes.desc()).all()
+    
+    # Get user's own posts
+    user_approved_posts = Post.query.filter_by(created_by=user_id, status="Approved").order_by(Post.submitted_at.desc()).all()
+    pending_posts = Post.query.filter_by(created_by=user_id, status="Pending").order_by(Post.submitted_at.desc()).all()
+    declined_posts = Post.query.filter_by(created_by=user_id, status="Declined").order_by(Post.submitted_at.desc()).all()
+    
+    # Get posts this user has reported
+    reported_posts = []
+    if user_id:
+        reported_posts = [r.post_id for r in PostReport.query.filter_by(reported_by=user_id).all()]
+    
+    return render_template("userdash.html", 
+                         feed_posts=feed_posts,
+                         approved_posts=user_approved_posts,
+                         pending_posts=pending_posts,
+                         declined_posts=declined_posts,
+                         reported_ids=reported_posts,
+                         show_report_count=(user_role == "admin"))
 
 # Show feedback form
 @auth_bp.route('/dashboard/feedback')
