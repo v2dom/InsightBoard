@@ -65,6 +65,10 @@ def get_approved_posts():
     posts = Post.query.filter(Post.status.in_(["Approved", "admin"]))\
                       .order_by(Post.upvotes.desc()).all()
     
+    for post in posts:
+        if post.created_at and post.created_at.tzinfo is None:
+            post.created_at = post.created_at.replace(tzinfo=timezone.utc)
+    
     user_id = session.get("user_id")
     user_role = session.get("user_role")
     reported_posts = []
@@ -77,7 +81,7 @@ def get_approved_posts():
             "id": p.id,
             "category": p.category,
             "content": p.content,
-            "timestamp": p.created_at.strftime("%m/%d/%Y %H:%M:%S") if p.created_at else "",
+            "timestamp": p.created_at.isoformat() if p.created_at else "",
             "status": p.status,
             "upvotes": p.upvotes,
             "reported": p.id in reported_posts,
@@ -126,9 +130,22 @@ def admin_pending():
         pending_posts = Post.query.filter_by(status="Pending").all()
         flagged_posts = Post.query.filter(Post.report_count > 0, Post.status == "Approved").all()
 
+        for post in pending_posts:
+            if post.submitted_at and post.submitted_at.tzinfo is None:
+                post.submitted_at = post.submitted_at.replace(tzinfo=timezone.utc)
+        
+        for post in flagged_posts:
+            if post.submitted_at and post.submitted_at.tzinfo is None:
+                post.submitted_at = post.submitted_at.replace(tzinfo=timezone.utc)
+            if post.reviewed_at and post.reviewed_at.tzinfo is None:
+                post.reviewed_at = post.reviewed_at.replace(tzinfo=timezone.utc)
+
         flagged_posts_with_reports = []
         for post in flagged_posts:
             reports = PostReport.query.filter_by(post_id=post.id).all()
+            for report in reports:
+                if report.reported_at and report.reported_at.tzinfo is None:
+                    report.reported_at = report.reported_at.replace(tzinfo=timezone.utc)
             flagged_posts_with_reports.append({
                 'post': post,
                 'reports': reports
@@ -186,6 +203,12 @@ def admin_dashboard():
     
     posts = Post.query.filter(Post.status.in_(["Approved", "admin"])).order_by(Post.upvotes.desc()).all()
     
+    for post in posts:
+        if post.submitted_at and post.submitted_at.tzinfo is None:
+            post.submitted_at = post.submitted_at.replace(tzinfo=timezone.utc)
+        if post.reviewed_at and post.reviewed_at.tzinfo is None:
+            post.reviewed_at = post.reviewed_at.replace(tzinfo=timezone.utc)
+    
     user_id = session.get("user_id")
     user_role = session.get("user_role")
     reported_posts = []
@@ -199,6 +222,12 @@ def admin_dashboard():
 def admin_approved():
     posts = Post.query.filter_by(status="Approved").all()
     
+    for post in posts:
+        if post.submitted_at and post.submitted_at.tzinfo is None:
+            post.submitted_at = post.submitted_at.replace(tzinfo=timezone.utc)
+        if post.reviewed_at and post.reviewed_at.tzinfo is None:
+            post.reviewed_at = post.reviewed_at.replace(tzinfo=timezone.utc)
+    
     user_id = session.get("user_id")
     user_role = session.get("user_role")
     reported_posts = []
@@ -211,6 +240,13 @@ def admin_approved():
 @routes_bp.route("/admin/declined")
 def admin_declined():
     posts = Post.query.filter_by(status="Declined").all()
+
+    for post in posts:
+        if post.submitted_at and post.submitted_at.tzinfo is None:
+            post.submitted_at = post.submitted_at.replace(tzinfo=timezone.utc)
+        if post.reviewed_at and post.reviewed_at.tzinfo is None:
+            post.reviewed_at = post.reviewed_at.replace(tzinfo=timezone.utc)
+    
     return render_template("declined.html", posts=posts)
 
 @routes_bp.route("/admin/all")
@@ -222,6 +258,13 @@ def all_posts(status=None):
         posts = Post.query.filter_by(status=status).all()
     else:
         posts = Post.query.all()
+    
+    for post in posts:
+        if post.submitted_at and post.submitted_at.tzinfo is None:
+            post.submitted_at = post.submitted_at.replace(tzinfo=timezone.utc)
+        if post.reviewed_at and post.reviewed_at.tzinfo is None:
+            post.reviewed_at = post.reviewed_at.replace(tzinfo=timezone.utc)
+    
     return render_template("all_posts.html", posts=posts, current_status=status)
 
 @routes_bp.route("/admin/submit", methods=["GET", "POST"])
@@ -258,6 +301,13 @@ def seed():
 @routes_bp.route("/admin-queue")
 def admin_queue():
     posts = Post.query.filter(Post.status.in_(["Pending", "Flagged"])).all()
+    
+    for post in posts:
+        if post.submitted_at and post.submitted_at.tzinfo is None:
+            post.submitted_at = post.submitted_at.replace(tzinfo=timezone.utc)
+        if post.reviewed_at and post.reviewed_at.tzinfo is None:
+            post.reviewed_at = post.reviewed_at.replace(tzinfo=timezone.utc)
+    
     return render_template("pending.html", posts=posts)
 
 @routes_bp.route("/admin-approve/<int:pid>", methods=["POST"])
@@ -281,18 +331,39 @@ def _review(pid, new_status, msg):
 @routes_bp.route("/admin-approved")
 def approved():
     posts = Post.query.filter_by(status="Approved").all()
+    
+    for post in posts:
+        if post.submitted_at and post.submitted_at.tzinfo is None:
+            post.submitted_at = post.submitted_at.replace(tzinfo=timezone.utc)
+        if post.reviewed_at and post.reviewed_at.tzinfo is None:
+            post.reviewed_at = post.reviewed_at.replace(tzinfo=timezone.utc)
+    
     reported = session.setdefault("reported_ids", [])
     return render_template("approved.html", posts=posts, reported_ids=reported)
 
 @routes_bp.route("/admin-declined")
 def declined():
     posts = Post.query.filter_by(status="Declined").all()
+    
+    for post in posts:
+        if post.submitted_at and post.submitted_at.tzinfo is None:
+            post.submitted_at = post.submitted_at.replace(tzinfo=timezone.utc)
+        if post.reviewed_at and post.reviewed_at.tzinfo is None:
+            post.reviewed_at = post.reviewed_at.replace(tzinfo=timezone.utc)
+    
     return render_template("declined.html", posts=posts)
 
 @routes_bp.route("/admin-all")
 @routes_bp.route("/admin-all/<status>")
 def all_posts_new(status=None):
     posts = Post.query.filter_by(status=status).all() if status else Post.query.all()
+    
+    for post in posts:
+        if post.submitted_at and post.submitted_at.tzinfo is None:
+            post.submitted_at = post.submitted_at.replace(tzinfo=timezone.utc)
+        if post.reviewed_at and post.reviewed_at.tzinfo is None:
+            post.reviewed_at = post.reviewed_at.replace(tzinfo=timezone.utc)
+    
     reported = session.setdefault("reported_ids", [])
     return render_template("all_posts.html", posts=posts, reported_ids=reported, current_status=status)
 

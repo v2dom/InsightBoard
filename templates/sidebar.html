@@ -11,60 +11,61 @@
   <nav class="p-4">
     {% if session.get('user_role') == 'admin' %}
       <div class="space-y-2">
-        <a href="{{ url_for('routes.admin_dashboard') }}" class="flex items-center px-4 py-2 text-gray-700 {% if request.endpoint == 'routes.admin_dashboard' %}bg-blue-100{% else %}hover:bg-gray-100{% endif %} rounded-lg">
-          <span class="mr-3">📊</span>
-          Feed
-        </a>
-        <a href="{{ url_for('routes.admin_pending') }}" class="flex items-center px-4 py-2 text-gray-700 {% if request.endpoint == 'routes.admin_pending' %}bg-blue-100{% else %}hover:bg-gray-100{% endif %} rounded-lg">
-          <span class="mr-3">⏳</span>
-          Admin Queue
-        </a>
-        <a href="{{ url_for('routes.all_posts') }}" class="flex items-center px-4 py-2 text-gray-700 {% if request.endpoint == 'routes.all_posts' %}bg-blue-100{% else %}hover:bg-gray-100{% endif %} rounded-lg">
-          <span class="mr-3">📋</span>
-          All Posts
-        </a>
+                 <a href="{{ url_for('routes.admin_dashboard') }}" class="flex items-center px-4 py-2 text-gray-700 {% if request.endpoint == 'routes.admin_dashboard' %}bg-blue-100{% else %}hover:bg-gray-100{% endif %} rounded-lg">
+           <span class="mr-3"></span>
+           Feed
+         </a>
+                 <a href="{{ url_for('routes.admin_pending') }}" class="flex items-center px-4 py-2 text-gray-700 {% if request.endpoint == 'routes.admin_pending' %}bg-blue-100{% else %}hover:bg-gray-100{% endif %} rounded-lg">
+           <span class="mr-3"></span>
+           Admin Queue
+         </a>
+                 <a href="{{ url_for('routes.all_posts') }}" class="flex items-center px-4 py-2 text-gray-700 {% if request.endpoint == 'routes.all_posts' %}bg-blue-100{% else %}hover:bg-gray-100{% endif %} rounded-lg">
+           <span class="mr-3"></span>
+           All Posts
+         </a>
       </div>
 
       <div class="mt-8 pt-6 border-t border-gray-200">
         <div class="space-y-2">
-          <a href="{{ url_for('routes.serve_create_post') }}" class="flex items-center px-4 py-2 text-gray-700 {% if request.endpoint == 'routes.serve_create_post' %}bg-blue-100{% else %}hover:bg-gray-100{% endif %} rounded-lg">
-            <span class="mr-3">✏️</span>
-            Create Post
-          </a>
-          <a href="{{ url_for('auth.create_account') }}" class="flex items-center px-4 py-2 text-gray-700 {% if request.endpoint == 'auth.create_account' %}bg-blue-100{% else %}hover:bg-gray-100{% endif %} rounded-lg">
-            <span class="mr-3">👤</span>
-            Create Account
-          </a>
+                     <a href="{{ url_for('routes.serve_create_post') }}" class="flex items-center px-4 py-2 text-gray-700 {% if request.endpoint == 'routes.serve_create_post' %}bg-blue-100{% else %}hover:bg-gray-100{% endif %} rounded-lg">
+             <span class="mr-3"></span>
+             Create Post
+           </a>
+                     <a href="{{ url_for('auth.create_account') }}" class="flex items-center px-4 py-2 text-gray-700 {% if request.endpoint == 'auth.create_account' %}bg-blue-100{% else %}hover:bg-gray-100{% endif %} rounded-lg">
+             <span class="mr-3"></span>
+             Create Account
+           </a>
           <a href="{{ url_for('auth.logout') }}" class="flex items-center px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg">
-            <span class="mr-3">🚪</span>
+            <span class="mr-3"></span>
             Log Out
           </a>
         </div>
       </div>
     {% else %}
-      <div class="space-y-2">
-        <a href="{{ url_for('auth.user_dashboard') }}" class="flex items-center px-4 py-2 text-gray-700 {% if request.endpoint == 'auth.user_dashboard' %}bg-blue-100{% else %}hover:bg-gray-100{% endif %} rounded-lg">
-          <span class="mr-3">📊</span>
-          Feed
-        </a>
-        <a href="{{ url_for('auth.my_posts') }}" class="flex items-center px-4 py-2 text-gray-700 {% if request.endpoint == 'auth.my_posts' %}bg-blue-100{% else %}hover:bg-gray-100{% endif %} rounded-lg">
-          <span class="mr-3">📝</span>
-          My Posts
-        </a>
+             <div class="space-y-2">
+         <a href="{{ url_for('auth.user_dashboard') }}" class="flex items-center px-4 py-2 text-gray-700 {% if request.endpoint == 'auth.user_dashboard' %}bg-blue-100{% else %}hover:bg-gray-100{% endif %} rounded-lg">
+           <span class="mr-3"></span>
+           Feed
+         </a>
+                 <a href="{{ url_for('auth.my_posts') }}" class="flex items-center px-4 py-2 text-gray-700 {% if request.endpoint == 'auth.my_posts' %}bg-blue-100{% else %}hover:bg-gray-100{% endif %} rounded-lg">
+           <span class="mr-3"></span>
+           My Posts
+         </a>
       </div>
 
       <div class="mt-8 pt-6 border-t border-gray-200">
         <div class="space-y-2">
-          <a href="{{ url_for('routes.serve_feedback_form') }}" class="flex items-center px-4 py-2 text-gray-700 {% if request.endpoint == 'routes.serve_feedback_form' %}bg-blue-100{% else %}hover:bg-gray-100{% endif %} rounded-lg">
-            <span class="mr-3">💬</span>
-            Submit Anonymous Feedback
-          </a>
-          <a href="{{ url_for('routes.badges') }}" class="flex items-center px-4 py-2 text-gray-700 {% if request.endpoint == 'routes.badges' %}bg-blue-100{% else %}hover:bg-gray-100{% endif %} rounded-lg">
-            <span class="mr-3">🏆</span>
-            Badges
-          </a>
+                   <a href="{{ url_for('routes.serve_feedback_form') }}" class="flex items-center px-4 py-2 text-gray-700 {% if request.endpoint == 'routes.serve_feedback_form' %}bg-blue-100{% else %}hover:bg-gray-100{% endif %} rounded-lg">
+           <span class="mr-3"></span>
+           Submit Anonymous Feedback
+         </a>
+                   <a href="{{ url_for('routes.badges') }}" class="flex items-center px-4 py-2 text-gray-700 {% if request.endpoint == 'routes.badges' %}bg-blue-100{% else %}hover:bg-gray-100{% endif %} rounded-lg">
+           <span class="mr-3"></span>
+           Badges
+         </a>
+
           <a href="{{ url_for('auth.logout') }}" class="flex items-center px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg">
-            <span class="mr-3">🚪</span>
+            <span class="mr-3"></span>
             Log Out
           </a>
         </div>

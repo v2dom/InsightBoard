@@ -26,9 +26,9 @@
 
         <div class="text-sm text-gray-500 mb-3">
           {% if post.status == "admin" %}
-            {{ post.submitted_at.strftime('%B %d, %Y at %I:%M %p') }}
+            <span data-timestamp="{{ post.submitted_at.isoformat() }}" data-time-format="full"></span>
           {% else %}
-            {{ post.reviewed_at.strftime('%B %d, %Y at %I:%M %p') }}
+            <span data-timestamp="{{ post.reviewed_at.isoformat() }}" data-time-format="full"></span>
           {% endif %}
         </div>
 
@@ -60,12 +60,11 @@
         <div class="text-sm text-gray-600 mb-1">
           {{ post.category }}
           {% if post.status != "admin" %}
-            <span class="text-gray-400 ml-2">• Anonymous</span>
           {% endif %}
         </div>
 
         <div class="text-sm text-gray-500 mb-3">
-          {{ post.submitted_at.strftime('%B %d, %Y at %I:%M %p') }}
+          <span data-timestamp="{{ post.submitted_at.isoformat() }}" data-time-format="full"></span>
         </div>
 
         <p class="text-gray-800 mb-3">{{ post.content }}</p>
@@ -94,15 +93,14 @@
         <div class="text-sm text-gray-600 mb-1">
           {{ post.category }}
           {% if post.status != "admin" %}
-            <span class="text-gray-400 ml-2">• Anonymous</span>
           {% endif %}
         </div>
 
         <div class="text-sm text-gray-500 mb-3">
           {% if post.reviewed_at %}
-            {{ post.reviewed_at.strftime('%B %d, %Y at %I:%M %p') }}
+            <span data-timestamp="{{ post.reviewed_at.isoformat() }}" data-time-format="full"></span>
           {% elif post.submitted_at %}
-            {{ post.submitted_at.strftime('%B %d, %Y at %I:%M %p') }}
+            <span data-timestamp="{{ post.submitted_at.isoformat() }}" data-time-format="full"></span>
           {% endif %}
         </div>
 

@@ -2,7 +2,7 @@ from flask import Blueprint, request, render_template, redirect, url_for, flash,
 from werkzeug.security import generate_password_hash, check_password_hash
 from model import User, Post, PostReport
 from extensions import db
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import random
 import string
 
@@ -111,6 +111,12 @@ def user_dashboard():
     feed_posts = Post.query.filter(Post.status.in_(["Approved", "admin"]))\
                           .order_by(Post.upvotes.desc()).all()
     
+    for post in feed_posts:
+        if post.submitted_at and post.submitted_at.tzinfo is None:
+            post.submitted_at = post.submitted_at.replace(tzinfo=timezone.utc)
+        if post.reviewed_at and post.reviewed_at.tzinfo is None:
+            post.reviewed_at = post.reviewed_at.replace(tzinfo=timezone.utc)
+    
     # Get posts this user has reported
     reported_posts = []
     if user_id:
@@ -139,6 +145,12 @@ def my_posts():
     user_approved_posts = Post.query.filter_by(created_by=user_id, status="Approved").order_by(Post.submitted_at.desc()).all()
     pending_posts = Post.query.filter_by(created_by=user_id, status="Pending").order_by(Post.submitted_at.desc()).all()
     declined_posts = Post.query.filter_by(created_by=user_id, status="Declined").order_by(Post.submitted_at.desc()).all()
+
+    for post in user_approved_posts + pending_posts + declined_posts:
+        if post.submitted_at and post.submitted_at.tzinfo is None:
+            post.submitted_at = post.submitted_at.replace(tzinfo=timezone.utc)
+        if post.reviewed_at and post.reviewed_at.tzinfo is None:
+            post.reviewed_at = post.reviewed_at.replace(tzinfo=timezone.utc)
     
     return render_template("my_posts.html", 
                          approved_posts=user_approved_posts,

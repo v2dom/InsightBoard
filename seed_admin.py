@@ -10,13 +10,13 @@ with app.app_context():
     plain_password = "abc"
     hashed_password = generate_password_hash(plain_password, method='pbkdf2:sha256')
 
-    print("📌 Generated hash:", hashed_password)
-    print("📌 Password matches hash?", check_password_hash(hashed_password, plain_password))
+    print("Generated hash:", hashed_password)
+    print("Password matches hash?", check_password_hash(hashed_password, plain_password))
 
     user = User.query.filter_by(email=admin_email).first()
 
     if user:
-        print("⚠️ Admin already exists. Updating password...")
+        print("Admin already exists. Updating password...")
         user.password = hashed_password
         user.name = "Admin"
         user.role = "admin"
@@ -33,6 +33,6 @@ with app.app_context():
 
     # Pull fresh from DB and test again
     fresh_user = User.query.filter_by(email=admin_email).first()
-    print("✅ Pulled from DB:", fresh_user.email)
-    print("🔍 Stored hash in DB:", fresh_user.password)
-    print("🔐 Password check (should be True):", check_password_hash(fresh_user.password, plain_password))
+    print("Pulled from DB:", fresh_user.email)
+    print("Stored hash in DB:", fresh_user.password)
+    print("Password check (should be True):", check_password_hash(fresh_user.password, plain_password))

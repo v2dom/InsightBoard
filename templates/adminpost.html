@@ -25,11 +25,11 @@
         <label for="category">Category:</label>
         <select id="category" name="category" required>
           <option value="">Select a category</option>
+          <option value="HR">HR</option>
+          <option value="Policy">Policy</option>
+          <option value="Culture">Culture</option>
           <option value="Question">Question</option>
-          <option value="Suggestion">Suggestion</option>
-          <option value="Concern">Concern</option>
-          <option value="Comment">Comment</option>
-          <option value="Complaint">Complaint</option>
+
         </select>
       </div>
 
@@ -62,10 +62,10 @@ document.getElementById("createPostForm").addEventListener("submit", async funct
   }
 
   try {
-    const response = await fetch("/create-post", {
+    const response = await fetch("/admin/create-post", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ category, content })
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ category, post: content })
     });
 
     const result = await response.json();

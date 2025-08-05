@@ -1,5 +1,5 @@
 from extensions import db
-from datetime import datetime
+from datetime import datetime, timezone
 
 class User(db.Model):
     __tablename__ = 'user'
@@ -48,7 +48,7 @@ class PostReport(db.Model):
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)
     reported_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     reason = db.Column(db.String(200), nullable=False)
-    reported_at = db.Column(db.DateTime, default=datetime.utcnow)
+    reported_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     
     # Ensure one user can only report a post once
     __table_args__ = (db.UniqueConstraint('post_id', 'reported_by', name='unique_user_post_report'),)

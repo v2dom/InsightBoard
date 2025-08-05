@@ -31,9 +31,9 @@
 
       <div class="text-sm text-gray-500 mb-3">
         {% if p.status == "admin" %}
-          {{ p.submitted_at.strftime('%B %d, %Y at %I:%M %p') }}
+          <span data-timestamp="{{ p.submitted_at.isoformat() }}" data-time-format="full"></span>
         {% else %}
-          {{ p.reviewed_at.strftime('%B %d, %Y at %I:%M %p') }}
+          <span data-timestamp="{{ p.reviewed_at.isoformat() }}" data-time-format="full"></span>
         {% endif %}
       </div>
 
