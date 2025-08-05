@@ -1,26 +1,41 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base_with_sidebar.html" %}
 
-{% extends "base.html" %}
+{% block title %}Declined Posts{% endblock %}
 
 {% block content %}
-<h2>Declined Posts</h2>
+<h1 class="text-3xl font-bold text-gray-900 mb-8">Declined Posts</h1>
+
 {% for p in posts %}
   <div class="card">
-    <p>{{ p.content }}</p>
-    <small>Declined {{ p.reviewed_at.strftime('%Y‑%m‑%d %H:%M') }}</small>
-    {% if p.review_msg %}
-    <small><br>Reason: {{ p.review_msg }}</small>
-    {% endif %}
+    <div class="flex justify-between items-start mb-2">
+      <div class="flex items-center space-x-2">
+        <span class="status-badge status-declined">Declined</span>
+      </div>
+    </div>
+
+    <div class="text-sm text-gray-600 mb-1">
+      {{ p.category }}
+    </div>
+
+    <div class="text-sm text-gray-500 mb-3">
+      {% if p.reviewed_at %}
+        {{ p.reviewed_at.strftime('%B %d, %Y at %I:%M %p') }}
+      {% elif p.submitted_at %}
+        {{ p.submitted_at.strftime('%B %d, %Y at %I:%M %p') }}
+      {% endif %}
+    </div>
+
+    <p class="text-gray-800 mb-3">{{ p.content }}</p>
+
+        <div class="flex items-center text-sm text-red-600">
+          {% if p.review_msg and p.review_msg != "Declined ❌" %}
+            <span>{{ p.review_msg }}</span>
+          {% else %}
+            <span>Declined by Administrator</span>
+          {% endif %}
+        </div>
   </div>
 {% else %}
-  <p>No declined posts.</p>
+  <p class="text-gray-500">No declined posts yet.</p>
 {% endfor %}
 {% endblock %}
-</body>
-</html>

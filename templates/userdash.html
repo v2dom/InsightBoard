@@ -1,206 +1,56 @@
-{% extends "base.html" %}
+{% extends "base_with_sidebar.html" %}
+
+{% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<div class="user-dashboard">
-  <h2>Dashboard</h2>
+<h1 class="text-3xl font-bold text-gray-900 mb-8">Feed</h1>
 
-  <div class="action-buttons">
-    {% if session.get('user_role') == 'admin' %}
-      <a href="{{ url_for('routes.serve_create_post') }}" class="btn btn-primary">Create New Post</a>
-    {% else %}
-      <a href="/dashboard/feedback" class="btn btn-primary">Submit Anonymous Feedback</a>
-    {% endif %}
-  </div>
-
-  <div class="posts-container">
-    <div class="status-section">
-      <h3>Feed</h3>
-      {% if feed_posts %}
-        {% for post in feed_posts %}
-        <div class="card post-card">
-          <div class="post-header">
-            <span class="category-badge">{{ post.category or 'Uncategorized' }}</span>
-            {% if post.status == 'admin' %}
+<div class="mb-8">
+  {% if feed_posts %}
+    {% for post in feed_posts %}
+      <div class="card">
+        <div class="flex justify-between items-start mb-2">
+          <div class="flex items-center space-x-2">
+            {% if post.status == "admin" %}
               <span class="status-badge status-admin">Admin Post</span>
             {% else %}
-              <span class="status-badge status-approved">{{ post.status }}</span>
+              <span class="status-badge status-approved">Anonymous</span>
             {% endif %}
           </div>
-          <div class="post-content">
-            <p>{{ post.content }}</p>
-          </div>
-          <div class="post-meta">
-            <small><strong>Submitted:</strong> {{ post.created_at.strftime('%m/%d/%Y %H:%M:%S') if post.created_at else 'N/A' }}</small>
-            {% if post.reviewed_at %}
-            <br><small><strong>Reviewed:</strong> {{ post.reviewed_at.strftime('%m/%d/%Y %H:%M:%S') }}</small>
-            {% endif %}
-            {% if show_report_count %}
-            <br><small><strong>Reports:</strong> {{ post.report_count or 0 }}</small>
-            {% endif %}
-          </div>
-          <div class="post-actions">
+          <div class="flex space-x-2">
             {% if post.id not in reported_ids %}
-              <a href="/report/{{ post.id }}" class="btn btn-report">Report</a>
+              <a href="/report/{{ post.id }}" class="btn-report">Report</a>
             {% else %}
-              <em class="reported-text">You reported this post</em>
+              <em class="text-sm text-gray-500">You reported this post</em>
             {% endif %}
           </div>
         </div>
-        {% endfor %}
-      {% else %}
-        <p class="no-posts">No posts in your feed yet.</p>
-      {% endif %}
-    </div>
-  </div>
 
-  <div class="logout-section">
-    <form action="{{ url_for('auth.logout') }}" method="GET">
-      <button type="submit" class="btn btn-secondary">Logout</button>
-    </form>
-  </div>
+        <div class="text-sm text-gray-600 mb-1">
+          {{ post.category }}
+        </div>
+
+        <div class="text-sm text-gray-500 mb-3">
+          {% if post.status == "admin" %}
+            {{ post.submitted_at.strftime('%B %d, %Y at %I:%M %p') }}
+          {% else %}
+            {{ post.reviewed_at.strftime('%B %d, %Y at %I:%M %p') }}
+          {% endif %}
+        </div>
+
+        <p class="text-gray-800 mb-3">{{ post.content }}</p>
+
+        <div class="flex items-center text-sm text-gray-500">
+          <span>↑ {{ post.upvotes or 0 }}</span>
+          <span class="mx-2">|</span>
+          <span>↓ {{ post.downvotes or 0 }}</span>
+        </div>
+      </div>
+    {% else %}
+      <p class="text-gray-500">No posts in feed yet.</p>
+    {% endfor %}
+  {% else %}
+    <p class="text-gray-500">No posts in feed yet.</p>
+  {% endif %}
 </div>
-
-<style>
-.user-dashboard {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.action-buttons {
-  margin-bottom: 30px;
-  text-align: center;
-}
-
-.btn {
-  display: inline-block;
-  padding: 10px 20px;
-  margin: 5px;
-  border: none;
-  border-radius: 5px;
-  text-decoration: none;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.btn-primary {
-  background-color: #007bff;
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: #0056b3;
-}
-
-.btn-secondary {
-  background-color: #6c757d;
-  color: white;
-}
-
-.btn-secondary:hover {
-  background-color: #545b62;
-}
-
-.status-section {
-  margin-bottom: 40px;
-}
-
-.status-section h3 {
-  color: #333;
-  border-bottom: 2px solid #eee;
-  padding-bottom: 10px;
-  margin-bottom: 20px;
-}
-
-.post-card {
-  margin-bottom: 20px;
-  border-left: 4px solid #ddd;
-}
-
-.post-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.category-badge {
-  background-color: #e9ecef;
-  color: #495057;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.status-badge.status-admin {
-  background-color: #007bff;
-  color: white;
-}
-
-.post-actions {
-  margin-top: 10px;
-  text-align: right;
-}
-
-.btn-report {
-  background-color: #dc3545;
-  color: white;
-  padding: 4px 12px;
-  border-radius: 4px;
-  text-decoration: none;
-  font-size: 12px;
-  transition: background-color 0.3s;
-}
-
-.btn-report:hover {
-  background-color: #c82333;
-  color: white;
-  text-decoration: none;
-}
-
-.reported-text {
-  color: #6c757d;
-  font-style: italic;
-  font-size: 12px;
-}
-
-.post-content {
-  margin-bottom: 15px;
-}
-
-.post-content p {
-  margin: 0;
-  line-height: 1.5;
-}
-
-.post-meta {
-  color: #666;
-  font-size: 12px;
-}
-
-.post-meta small {
-  display: block;
-  margin-bottom: 2px;
-}
-
-.no-posts {
-  color: #666;
-  font-style: italic;
-  text-align: center;
-  padding: 20px;
-  background-color: #f8f9fa;
-  border-radius: 5px;
-}
-
-.logout-section {
-  text-align: center;
-  margin-top: 40px;
-  padding-top: 20px;
-  border-top: 1px solid #eee;
-}
-</style>
-
-
 {% endblock %}

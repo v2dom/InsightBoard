@@ -11,19 +11,15 @@ def generate_password(length=10):
 
 auth_bp = Blueprint('auth', __name__)
 
-# Admin Dashboard Page
-@auth_bp.route('/admin')
-def admin_dashboard():
-    if session.get('user_role') != 'admin':
-        return redirect(url_for('auth.login_page'))
-    return render_template('admindash.html')
-
 # Create New User
-@auth_bp.route('/admin/create-account', methods=['POST'])
+@auth_bp.route('/admin/create-account', methods=['GET', 'POST'])
 def create_account():
     if session.get('user_role') != 'admin':
         return jsonify({"status": "error", "message": "Unauthorized"}), 403
 
+    if request.method == 'GET':
+        return render_template('create_account.html')
+    
     first_name = request.form.get('first_name')
     last_name = request.form.get('last_name')
     email = request.form.get('email')
@@ -88,12 +84,17 @@ def login():
     # Successful login
     session['user_id'] = user.id
     session['user_role'] = user.role
+
+    name_parts = user.name.split(' ', 1)
+    session['first_name'] = name_parts[0] if name_parts else 'User'
+    session['last_name'] = name_parts[1] if len(name_parts) > 1 else ''
+    
     user.failed_attempts = 0
     user.locked_until = None
     db.session.commit()
 
     if user.role == 'admin':
-        return redirect(url_for('auth.admin_dashboard'))
+        return redirect(url_for('routes.admin_dashboard'))
     else:
         return redirect(url_for('auth.user_dashboard'))
 
@@ -110,11 +111,6 @@ def user_dashboard():
     feed_posts = Post.query.filter(Post.status.in_(["Approved", "admin"]))\
                           .order_by(Post.upvotes.desc()).all()
     
-    # Get user's own posts
-    user_approved_posts = Post.query.filter_by(created_by=user_id, status="Approved").order_by(Post.submitted_at.desc()).all()
-    pending_posts = Post.query.filter_by(created_by=user_id, status="Pending").order_by(Post.submitted_at.desc()).all()
-    declined_posts = Post.query.filter_by(created_by=user_id, status="Declined").order_by(Post.submitted_at.desc()).all()
-    
     # Get posts this user has reported
     reported_posts = []
     if user_id:
@@ -122,9 +118,6 @@ def user_dashboard():
     
     return render_template("userdash.html", 
                          feed_posts=feed_posts,
-                         approved_posts=user_approved_posts,
-                         pending_posts=pending_posts,
-                         declined_posts=declined_posts,
                          reported_ids=reported_posts,
                          show_report_count=(user_role == "admin"))
 
@@ -134,6 +127,23 @@ def dashboard_feedback():
     if not session.get("user_id"):
         return redirect(url_for('auth.login_page'))
     return render_template("submit.html")
+
+# Show user's posts
+@auth_bp.route('/dashboard/my-posts')
+def my_posts():
+    if not session.get("user_id"):
+        return redirect(url_for('auth.login_page'))
+    
+    user_id = session["user_id"]
+    
+    user_approved_posts = Post.query.filter_by(created_by=user_id, status="Approved").order_by(Post.submitted_at.desc()).all()
+    pending_posts = Post.query.filter_by(created_by=user_id, status="Pending").order_by(Post.submitted_at.desc()).all()
+    declined_posts = Post.query.filter_by(created_by=user_id, status="Declined").order_by(Post.submitted_at.desc()).all()
+    
+    return render_template("my_posts.html", 
+                         approved_posts=user_approved_posts,
+                         pending_posts=pending_posts,
+                         declined_posts=declined_posts)
 
 
 # Logout

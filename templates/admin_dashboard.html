@@ -1,0 +1,56 @@
+{% extends "base_with_sidebar.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold text-gray-900 mb-8">Feed</h1>
+
+{% if posts %}
+  {% for p in posts %}
+    <div class="card">
+      <div class="flex justify-between items-start mb-2">
+        <div class="flex items-center space-x-2">
+          {% if p.status == "admin" %}
+            <span class="status-badge status-admin">Admin Post</span>
+          {% else %}
+            <span class="status-badge status-approved">Anonymous</span>
+          {% endif %}
+        </div>
+        <div class="flex space-x-2">
+          {% if p.id not in reported_ids %}
+            <a href="/report/{{ p.id }}" class="btn-report">Report</a>
+          {% elif p.id in reported_ids %}
+            <em class="text-sm text-gray-500">You reported this post</em>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="text-sm text-gray-600 mb-1">
+        {{ p.category }}
+      </div>
+
+      <div class="text-sm text-gray-500 mb-3">
+        {% if p.status == "admin" %}
+          {{ p.submitted_at.strftime('%B %d, %Y at %I:%M %p') }}
+        {% else %}
+          {{ p.reviewed_at.strftime('%B %d, %Y at %I:%M %p') }}
+        {% endif %}
+      </div>
+
+      <p class="text-gray-800 mb-3">{{ p.content }}</p>
+
+      <div class="flex items-center text-sm text-gray-500">
+        <span>↑ {{ p.upvotes or 0 }}</span>
+        <span class="mx-2">|</span>
+        <span>↓ {{ p.downvotes or 0 }}</span>
+        {% if show_report_count %}
+          <span class="mx-2">|</span>
+          <span>Reports: {{ p.report_count or 0 }}</span>
+        {% endif %}
+      </div>
+    </div>
+  {% endfor %}
+{% else %}
+  <p class="text-gray-500">No posts available.</p>
+{% endif %}
+{% endblock %} 

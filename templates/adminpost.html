@@ -1,151 +1,86 @@
-{% extends "base.html" %}
+{% extends "base_with_sidebar.html" %}
+
+{% block title %}Create Post{% endblock %}
+
+{% block additional_styles %}
+.form-group{margin-bottom:20px;}
+.form-group label{display:block;margin-bottom:8px;font-weight:bold;color:#333;}
+.form-group select,.form-group textarea{width:100%;padding:12px;border:1px solid #ddd;border-radius:4px;font-size:14px;box-sizing:border-box;}
+.form-group textarea{resize:vertical;min-height:120px;}
+.form-group select:focus,.form-group textarea:focus{outline:none;border-color:#007bff;box-shadow:0 0 0 2px rgba(0,123,255,0.25);}
+.btn{display:inline-block;padding:12px 24px;border:none;border-radius:5px;text-decoration:none;font-size:16px;cursor:pointer;transition:background-color 0.3s;}
+.btn-primary{background-color:#007bff;color:white;}
+.btn-primary:hover{background-color:#0056b3;}
+.error{color:red;margin-top:15px;font-weight:bold;}
+.success{color:green;margin-top:15px;font-weight:bold;}
+{% endblock %}
 
 {% block content %}
-<div class="feedback-container">
-  <h2>Create Admin Post</h2>
-  
-  <div class="feedback-form-container">
-    <form id="postForm">
+<h1 class="text-3xl font-bold text-gray-900 mb-8">Create Post</h1>
+
+<div class="max-w-2xl">
+  <div class="card">
+    <form id="createPostForm">
       <div class="form-group">
         <label for="category">Category:</label>
         <select id="category" name="category" required>
           <option value="">Select a category</option>
-          <option value="HR">HR</option>
-          <option value="Policy">Policy</option>
-          <option value="Culture">Culture</option>
+          <option value="Question">Question</option>
+          <option value="Suggestion">Suggestion</option>
+          <option value="Concern">Concern</option>
+          <option value="Comment">Comment</option>
+          <option value="Complaint">Complaint</option>
         </select>
       </div>
 
       <div class="form-group">
-        <label for="post">Post Content:</label>
-        <textarea id="post" name="post" rows="5" cols="50" required placeholder="Post goeshere..."></textarea>
+        <label for="content">Post Content:</label>
+        <textarea id="content" name="content" rows="5" cols="50" required placeholder="Write your post content here..."></textarea>
       </div>
 
-      <button type="submit" class="btn btn-primary">Publish</button>
+      <button type="submit" class="btn btn-primary">Create Post</button>
       <p id="message" class="error"></p>
     </form>
   </div>
 </div>
+{% endblock %}
 
-<style>
-.feedback-container {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.feedback-form-container {
-  background-color: #f8f9fa;
-  padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: bold;
-  color: #333;
-}
-
-.form-group select,
-.form-group textarea {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-  box-sizing: border-box;
-}
-
-.form-group textarea {
-  resize: vertical;
-  min-height: 120px;
-}
-
-.form-group select:focus,
-.form-group textarea:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
-}
-
-.btn {
-  display: inline-block;
-  padding: 12px 24px;
-  border: none;
-  border-radius: 5px;
-  text-decoration: none;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.btn-primary {
-  background-color: #007bff;
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: #0056b3;
-}
-
-.error {
-  color: red;
-  margin-top: 15px;
-  font-weight: bold;
-}
-
-.success {
-  color: green;
-  margin-top: 15px;
-  font-weight: bold;
-}
-</style>
-
+{% block scripts %}
 <script>
-document.getElementById("postForm").addEventListener("submit", async function(event) {
+document.getElementById("createPostForm").addEventListener("submit", async function(event) {
   event.preventDefault();
 
   const form = event.target;
   const category = document.getElementById("category").value;
-  const post = document.getElementById("post").value.trim();
+  const content = document.getElementById("content").value.trim();
   const message = document.getElementById("message");
 
-  if (!category || !post) {
-    message.textContent = "Please select a category and enter post content.";
+  if (!category || !content) {
+    message.textContent = "Please select a category and enter content.";
     message.className = "error";
     return;
   }
 
-  const formData = new FormData();
-  formData.append("category", category);
-  formData.append("post", post);
-
   try {
-    const res = await fetch("/admin/create-post", {
+    const response = await fetch("/create-post", {
       method: "POST",
-      body: formData
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ category, content })
     });
 
-    const result = await res.json();
+    const result = await response.json();
 
-    if (res.ok && result.status === "success") {
+    if (response.ok && result.status === "success") {
       message.style.color = "green";
       message.className = "success";
-      message.textContent = result.message;
+      message.textContent = "Post created successfully!";
       form.reset();
     } else {
       message.style.color = "red";
       message.className = "error";
-      message.textContent = result.message || "Failed to submit post.";
+      message.textContent = result.message || "An error occurred.";
     }
   } catch (err) {
-    console.error(err);
     message.style.color = "red";
     message.className = "error";
     message.textContent = "Could not connect to server.";

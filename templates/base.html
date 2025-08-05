@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <title>{{ title }}</title>
-  <style>
+    <style>
     body{font-family:Arial,Helvetica,sans-serif;max-width:820px;margin:40px auto;}
     nav a{margin-right:14px}
     .card{border:1px solid #ccc;border-radius:8px;padding:14px;margin-bottom:18px;}
@@ -14,20 +14,12 @@
     .status-pending{background:#fff3cd;color:#856404;}
     .status-approved{background:#d4edda;color:#155724;}
     .status-declined{background:#f8d7da;color:#721c24;}
+    .status-flagged{background:#f8d7da;color:#721c24;}
+    .status-admin{background:#17a2b8;color:white;}
   </style>
 </head>
 <body>
-  {% if session.get('user_role') == 'admin' %}
-  <nav>
-    <nav>
-      <a href="{{ url_for('routes.admin_pending') }}">Admin Queue</a>
-      <a href="{{ url_for('routes.admin_approved') }}">Approved Feed</a>
-      <a href="{{ url_for('routes.admin_declined') }}">Declined Posts</a>
-      <a href="{{ url_for('routes.all_posts') }}">All Posts</a>
-      <a href="{{ url_for('routes.admin_submit_form') }}">Submit Feedback</a>
-    </nav>
-  </nav>
-  {% endif %}
+
   {% with msgs = get_flashed_messages() %}
     {% if msgs %}<div class="flash">{{ msgs[0] }}</div>{% endif %}
   {% endwith %}

@@ -1,10 +1,25 @@
-{% extends "base.html" %}
+{% extends "base_with_sidebar.html" %}
+
+{% block title %}Submit Anonymous Feedback{% endblock %}
+
+{% block additional_styles %}
+.form-group{margin-bottom:20px;}
+.form-group label{display:block;margin-bottom:8px;font-weight:bold;color:#333;}
+.form-group select,.form-group textarea{width:100%;padding:12px;border:1px solid #ddd;border-radius:4px;font-size:14px;box-sizing:border-box;}
+.form-group textarea{resize:vertical;min-height:120px;}
+.form-group select:focus,.form-group textarea:focus{outline:none;border-color:#007bff;box-shadow:0 0 0 2px rgba(0,123,255,0.25);}
+.btn{display:inline-block;padding:12px 24px;border:none;border-radius:5px;text-decoration:none;font-size:16px;cursor:pointer;transition:background-color 0.3s;}
+.btn-primary{background-color:#007bff;color:white;}
+.btn-primary:hover{background-color:#0056b3;}
+.error{color:red;margin-top:15px;font-weight:bold;}
+.success{color:green;margin-top:15px;font-weight:bold;}
+{% endblock %}
 
 {% block content %}
-<div class="feedback-container">
-  <h2>Submit Anonymous Feedback</h2>
-  
-  <div class="feedback-form-container">
+<h1 class="text-3xl font-bold text-gray-900 mb-8">Submit Anonymous Feedback</h1>
+
+<div class="max-w-2xl">
+  <div class="card">
     <form id="feedbackForm">
       <div class="form-group">
         <label for="category">Category:</label>
@@ -20,7 +35,7 @@
 
       <div class="form-group">
         <label for="content">Your Feedback:</label>
-        <textarea id="content" rows="5" cols="50" required placeholder="Feedback goes here..."></textarea>
+        <textarea id="content" rows="5" cols="50" required placeholder="Write your feedback here..."></textarea>
       </div>
 
       <button type="submit" class="btn btn-primary">Submit</button>
@@ -28,89 +43,10 @@
     </form>
   </div>
 </div>
+{% endblock %}
 
-<style>
-.feedback-container {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.feedback-form-container {
-  background-color: #f8f9fa;
-  padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: bold;
-  color: #333;
-}
-
-.form-group select,
-.form-group textarea {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-  box-sizing: border-box;
-}
-
-.form-group textarea {
-  resize: vertical;
-  min-height: 120px;
-}
-
-.form-group select:focus,
-.form-group textarea:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
-}
-
-.btn {
-  display: inline-block;
-  padding: 12px 24px;
-  border: none;
-  border-radius: 5px;
-  text-decoration: none;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.btn-primary {
-  background-color: #007bff;
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: #0056b3;
-}
-
-.error {
-  color: red;
-  margin-top: 15px;
-  font-weight: bold;
-}
-
-.success {
-  color: green;
-  margin-top: 15px;
-  font-weight: bold;
-}
-</style>
-
+{% block scripts %}
 <script>
-
 document.getElementById("feedbackForm").addEventListener("submit", async function(event) {
   event.preventDefault();
 

@@ -1,40 +1,54 @@
-{% extends "base.html" %}
+{% extends "base_with_sidebar.html" %}
+
+{% block title %}Approved Posts{% endblock %}
 
 {% block content %}
-<h2>Approved Posts</h2>
+<h1 class="text-3xl font-bold text-gray-900 mb-8">Approved Posts</h1>
+
 {% for p in posts %}
   <div class="card">
-    <p>{{ p.content }}</p>
-    <small>Approved {{ p.reviewed_at.strftime('%Y‑%m‑%d %H:%M') }}</small><br><br>
-    {% if show_report_count %}
-      <small>Reports: {{ p.report_count or 0 }}</small><br><br>
-    {% endif %}
-    {% if p.id not in reported_ids %}
-      <a href="/report/{{ p.id }}" class="btn btn-report">Report</a>
-    {% else %}
-      <em>You reported this post</em>
-    {% endif %}
+    <div class="flex justify-between items-start mb-2">
+      <div class="flex items-center space-x-2">
+        {% if p.status == "admin" %}
+          <span class="status-badge status-admin">Admin Post</span>
+        {% else %}
+          <span class="status-badge status-approved">Anonymous</span>
+        {% endif %}
+      </div>
+      <div class="flex space-x-2">
+        {% if p.id not in reported_ids %}
+          <a href="/report/{{ p.id }}" class="btn-report">Report</a>
+        {% else %}
+          <em class="text-sm text-gray-500">You reported this post</em>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="text-sm text-gray-600 mb-1">
+      {{ p.category }}
+    </div>
+
+    <div class="text-sm text-gray-500 mb-3">
+      {% if p.status == "admin" %}
+        {{ p.submitted_at.strftime('%B %d, %Y at %I:%M %p') }}
+      {% else %}
+        {{ p.reviewed_at.strftime('%B %d, %Y at %I:%M %p') }}
+      {% endif %}
+    </div>
+
+    <p class="text-gray-800 mb-3">{{ p.content }}</p>
+
+    <div class="flex items-center text-sm text-gray-500">
+      <span>↑ {{ p.upvotes or 0 }}</span>
+      <span class="mx-2">|</span>
+      <span>↓ {{ p.downvotes or 0 }}</span>
+      {% if show_report_count %}
+        <span class="mx-2">|</span>
+        <span>Reports: {{ p.report_count or 0 }}</span>
+      {% endif %}
+    </div>
   </div>
 {% else %}
-  <p>No approved posts yet.</p>
+  <p class="text-gray-500">No approved posts yet.</p>
 {% endfor %}
-
-<style>
-.btn-report {
-  background-color: #dc3545;
-  color: white;
-  padding: 4px 12px;
-  border-radius: 4px;
-  text-decoration: none;
-  font-size: 12px;
-  transition: background-color 0.3s;
-  display: inline-block;
-}
-
-.btn-report:hover {
-  background-color: #c82333;
-  color: white;
-  text-decoration: none;
-}
-</style>
 {% endblock %}

@@ -137,7 +137,7 @@
       </div>
       <div style="margin-top: 20px;">
         {% if session.get('user_role') == 'admin' %}
-          <a href="/admin/approved" class="btn-secondary">Back to Approved Posts</a>
+          <a href="/admin" class="btn-secondary">Back to Approved Posts</a>
         {% else %}
           <a href="/dashboard" class="btn-secondary">Back to Dashboard</a>
         {% endif %}
@@ -145,7 +145,7 @@
     {% else %}
       <form method="post">
         <label for="reason">Reason for Report:</label>
-        <textarea name="reason" id="reason" required placeholder="Please explain why this post is inappropriate or violates our community guidelines..."></textarea>
+        <textarea name="reason" id="reason" required placeholder="Explain why you are reporting this post here..."></textarea>
         
         <div style="margin-top: 20px;">
           <button type="submit">Submit Report</button>

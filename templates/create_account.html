@@ -1,0 +1,93 @@
+{% extends "base_with_sidebar.html" %}
+
+{% block title %}Create Account{% endblock %}
+
+{% block additional_styles %}
+.form-group{margin-bottom:20px;}
+.form-group label{display:block;margin-bottom:8px;font-weight:bold;color:#333;}
+.form-group input{width:100%;padding:12px;border:1px solid #ddd;border-radius:4px;font-size:14px;box-sizing:border-box;}
+.form-group input:focus{outline:none;border-color:#007bff;box-shadow:0 0 0 2px rgba(0,123,255,0.25);}
+.btn{display:inline-block;padding:12px 24px;border:none;border-radius:5px;text-decoration:none;font-size:16px;cursor:pointer;transition:background-color 0.3s;}
+.btn-primary{background-color:#007bff;color:white;}
+.btn-primary:hover{background-color:#0056b3;}
+.error{color:red;margin-top:15px;font-weight:bold;}
+.success{color:green;margin-top:15px;font-weight:bold;}
+{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold text-gray-900 mb-8">Create New Account</h1>
+
+<div class="max-w-2xl">
+  <div class="card">
+    <form id="createAccountForm">
+      <div class="form-group">
+        <label for="first_name">First Name:</label>
+        <input type="text" id="first_name" name="first_name" required>
+      </div>
+
+      <div class="form-group">
+        <label for="last_name">Last Name:</label>
+        <input type="text" id="last_name" name="last_name" required>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+      </div>
+
+      <div class="form-group">
+        <label for="role">Role:</label>
+        <select id="role" name="role" required>
+          <option value="">Select a role</option>
+          <option value="user">User</option>
+          <option value="admin">Administrator</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Create Account</button>
+      <p id="message" class="error"></p>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById("createAccountForm").addEventListener("submit", async function(event) {
+  event.preventDefault();
+
+  const form = event.target;
+  const formData = new FormData(form);
+  const message = document.getElementById("message");
+
+  try {
+    const response = await fetch("/create-account", {
+      method: "POST",
+      body: formData
+    });
+
+    const result = await response.json();
+
+    if (response.ok && result.status === "success") {
+      message.style.color = "green";
+      message.className = "success";
+      message.textContent = "Account created successfully!";
+      form.reset();
+    } else {
+      message.style.color = "red";
+      message.className = "error";
+      message.textContent = result.message || "An error occurred.";
+    }
+  } catch (err) {
+    message.style.color = "red";
+    message.className = "error";
+    message.textContent = "Could not connect to server.";
+  }
+});
+</script>
+{% endblock %} 

@@ -1,32 +1,60 @@
-<!-- templates/login.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - InsightBoard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .form-group{margin-bottom:20px;}
+        .form-group label{display:block;margin-bottom:8px;font-weight:bold;color:#333;}
+        .form-group input{width:100%;padding:12px;border:1px solid #ddd;border-radius:4px;font-size:14px;box-sizing:border-box;}
+        .form-group input:focus{outline:none;border-color:#007bff;box-shadow:0 0 0 2px rgba(0,123,255,0.25);}
+        .btn{display:inline-block;padding:12px 24px;border:none;border-radius:5px;text-decoration:none;font-size:16px;cursor:pointer;transition:background-color 0.3s;}
+        .btn-primary{background-color:#007bff;color:white;}
+        .btn-primary:hover{background-color:#0056b3;}
+        .flash{background:#e9fbe9;border:1px solid #b2e2b2;padding:8px;border-radius:5px;margin-bottom:14px;}
+        .flash.error{background:#f8d7da;border-color:#f5c6cb;color:#721c24;}
+    </style>
 </head>
-<body>
-    <h2>Login</h2>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <ul>
-            {% for category, message in messages %}
-                <li style="color: {% if category == 'danger' %}red{% else %}green{% endif %};">
-                    {{ message }}
-                </li>
-            {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
+<body class="bg-gray-50 min-h-screen flex items-center justify-center">
+    <div class="max-w-md w-full">
+        <div class="bg-white shadow-lg rounded-lg p-8">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">InsightBoard</h1>
+                <p class="text-gray-600">Sign in to your account</p>
+            </div>
 
-    <form method="POST" action="{{ url_for('auth.login') }}">
-        <label>Email:</label><br>
-        <input type="email" name="email" required><br><br>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash {% if category == 'danger' %}error{% endif %} mb-4">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
 
-        <label>Password:</label><br>
-        <input type="password" name="password" required><br><br>
+            <form method="POST" action="{{ url_for('auth.login') }}">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required placeholder="Enter your email">
+                </div>
 
-        <button type="submit">Login</button>
-    </form>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required placeholder="Enter your password">
+                </div>
+
+                <button type="submit" class="btn btn-primary w-full">Sign In</button>
+            </form>
+
+            <div class="text-center mt-6">
+                <p class="text-sm text-gray-500">
+                    MisMatcha Socks - CIS 440 Capstone Project
+                </p>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

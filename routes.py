@@ -13,15 +13,14 @@ routes_bp = Blueprint('routes', __name__)
 
 @routes_bp.route('/')
 def home():
-    return render_template('index.html')  # Your landing page
+    return render_template('index.html')
 
     
 @routes_bp.route("/submit-feedback", methods=["POST"])
 def submit_feedback():
     if not session.get("user_id"):
         return jsonify({"status": "error", "message": "You must be logged in to submit feedback."}), 401
-    
-    # Admins cannot submit feedback
+
     if session.get('user_role') == 'admin':
         return jsonify({"status": "error", "message": "Admin users cannot submit anonymous feedback."}), 403
     
@@ -54,7 +53,6 @@ def serve_feedback_form():
         flash("You must be logged in to submit feedback.", "error")
         return redirect(url_for('auth.login_page'))
     
-    # Block admin users from submitting anonymous feedback
     if session.get('user_role') == 'admin':
         flash("Admin users cannot submit anonymous feedback.", "error")
         return redirect(url_for('auth.user_dashboard'))
@@ -72,7 +70,6 @@ def get_approved_posts():
     reported_posts = []
     
     if user_id:
-        # Get posts this user has reported
         reported_posts = [r.post_id for r in PostReport.query.filter_by(reported_by=user_id).all()]
     
     return jsonify([
@@ -115,7 +112,7 @@ def handle_create_post():
         submitted_at=datetime.now(timezone.utc),
         status="admin",
         upvotes=0,
-        created_by=session.get("user_id") or 1  # Use actual user ID if available
+        created_by=session.get("user_id") or 1
     )
 
     db.session.add(new_post)
@@ -126,11 +123,23 @@ def handle_create_post():
 @routes_bp.route("/admin/pending")
 def admin_pending():
     try:
-        posts = Post.query.filter_by(status="Pending").all()
-        return render_template("pending.html", posts=posts)
+        pending_posts = Post.query.filter_by(status="Pending").all()
+        flagged_posts = Post.query.filter(Post.report_count > 0, Post.status == "Approved").all()
+
+        flagged_posts_with_reports = []
+        for post in flagged_posts:
+            reports = PostReport.query.filter_by(post_id=post.id).all()
+            flagged_posts_with_reports.append({
+                'post': post,
+                'reports': reports
+            })
+        
+        return render_template("pending.html", 
+                             pending_posts=pending_posts, 
+                             flagged_posts_with_reports=flagged_posts_with_reports)
     except Exception as e:
         flash(f"Database error: {str(e)}", "error")
-        return render_template("pending.html", posts=[])
+        return render_template("pending.html", pending_posts=[], flagged_posts_with_reports=[])
 
 @routes_bp.route("/admin/approve/<int:pid>", methods=["POST"])
 def approve_post(pid):
@@ -150,6 +159,42 @@ def decline_post(pid):
     db.session.commit()
     return redirect(url_for('routes.admin_pending'))
 
+@routes_bp.route("/admin/approve-flagged/<int:pid>", methods=["POST"])
+def approve_flagged_post(pid):
+    post = Post.query.get_or_404(pid)
+    post.report_count = 0
+    PostReport.query.filter_by(post_id=pid).delete()
+    post.reviewed_at = datetime.now(timezone.utc)
+    post.review_msg = "Re-approved after flag review ✅"
+    db.session.commit()
+    return redirect(url_for('routes.admin_pending'))
+
+@routes_bp.route("/admin/decline-flagged/<int:pid>", methods=["POST"])
+def decline_flagged_post(pid):
+    post = Post.query.get_or_404(pid)
+    post.status = "Declined"
+    post.reviewed_at = datetime.now(timezone.utc)
+    post.review_msg = "Declined after flag review ❌"
+    PostReport.query.filter_by(post_id=pid).delete()
+    db.session.commit()
+    return redirect(url_for('routes.admin_pending'))
+
+@routes_bp.route("/admin")
+def admin_dashboard():
+    if session.get('user_role') != 'admin':
+        return redirect(url_for('auth.login_page'))
+    
+    posts = Post.query.filter(Post.status.in_(["Approved", "admin"])).order_by(Post.upvotes.desc()).all()
+    
+    user_id = session.get("user_id")
+    user_role = session.get("user_role")
+    reported_posts = []
+    
+    if user_id:
+        reported_posts = [r.post_id for r in PostReport.query.filter_by(reported_by=user_id).all()]
+    
+    return render_template("admin_dashboard.html", posts=posts, reported_ids=reported_posts, show_report_count=(user_role == "admin"))
+
 @routes_bp.route("/admin/approved")
 def admin_approved():
     posts = Post.query.filter_by(status="Approved").all()
@@ -159,7 +204,6 @@ def admin_approved():
     reported_posts = []
     
     if user_id:
-        # Get posts this user has reported
         reported_posts = [r.post_id for r in PostReport.query.filter_by(reported_by=user_id).all()]
     
     return render_template("approved.html", posts=posts, reported_ids=reported_posts, show_report_count=(user_role == "admin"))
@@ -170,9 +214,15 @@ def admin_declined():
     return render_template("declined.html", posts=posts)
 
 @routes_bp.route("/admin/all")
-def all_posts():
-    posts = Post.query.all()
-    return render_template("all_posts.html", posts=posts)
+@routes_bp.route("/admin/all/<status>")
+def all_posts(status=None):
+    if status == "Flagged":
+        posts = Post.query.filter(Post.report_count > 0, Post.status == "Approved").all()
+    elif status:
+        posts = Post.query.filter_by(status=status).all()
+    else:
+        posts = Post.query.all()
+    return render_template("all_posts.html", posts=posts, current_status=status)
 
 @routes_bp.route("/admin/submit", methods=["GET", "POST"])
 def admin_submit_form():
@@ -188,7 +238,6 @@ def admin_submit_form():
 
 
 
-# ---------- New Admin Interface Helpers ----------
 def flash_message(msg):
     flash(msg)
 
@@ -196,7 +245,6 @@ def badge(post):
     return f'<span class="badge badge-{post.status.lower()}">{post.status}</span>'
 
 
-# ---------- New Admin Interface Routes ----------
 @routes_bp.route("/seed")
 def seed():
     if not Post.query.first():
@@ -257,6 +305,12 @@ def submit():
         return redirect(url_for("routes.submit"))
     return render_template("submit.html")
 
+@routes_bp.route("/badges")
+def badges():
+    if not session.get("user_id"):
+        return redirect(url_for('auth.login_page'))
+    return render_template("badges.html")
+
 @routes_bp.route("/report/<int:pid>", methods=["GET", "POST"])
 def report(pid):
     if not session.get("user_id"):
@@ -266,12 +320,10 @@ def report(pid):
     post = Post.query.get_or_404(pid)
     user_id = session.get("user_id")
     
-    # Check if user already reported this post
     existing_report = PostReport.query.filter_by(post_id=pid, reported_by=user_id).first()
     
     if request.method == "POST" and not existing_report:
         try:
-            # Create the report
             report = PostReport(
                 post_id=pid,
                 reported_by=user_id,
@@ -279,20 +331,18 @@ def report(pid):
             )
             db.session.add(report)
             
-            # Increment report count
             post.report_count += 1
             
-            # If post gets 2 or more reports, move it to declined
-            if post.report_count >= 2:
+            if post.report_count >= 3:
                 post.status = "Declined"
                 post.reviewed_at = datetime.now(timezone.utc)
                 post.review_msg = f"Auto-declined due to {post.report_count} reports"
                 flash(f"Post has been reported {post.report_count} times and has been automatically declined.", "warning")
             else:
-                flash(f"Report submitted. Post has {post.report_count} report(s).", "success")
+                post.status = "Approved"
+                flash(f"Report submitted. Post has {post.report_count} report(s) and will be reviewed by admin.", "success")
             
             db.session.commit()
-            # Redirect based on user role - admins go to admin approved, users go to dashboard
             if session.get("user_role") == "admin":
                 return redirect(url_for("routes.admin_approved"))
             else:
@@ -301,7 +351,6 @@ def report(pid):
         except Exception as e:
             db.session.rollback()
             flash("Error submitting report. You may have already reported this post.", "error")
-            # Redirect based on user role
             if session.get("user_role") == "admin":
                 return redirect(url_for("routes.admin_approved"))
             else:
