@@ -24,7 +24,7 @@
            All Posts
          </a>
       </div>
-
+      
       <div class="mt-8 pt-6 border-t border-gray-200">
         <div class="space-y-2">
                      <a href="{{ url_for('routes.serve_create_post') }}" class="flex items-center px-4 py-2 text-gray-700 {% if request.endpoint == 'routes.serve_create_post' %}bg-blue-100{% else %}hover:bg-gray-100{% endif %} rounded-lg">
@@ -70,6 +70,7 @@
           </a>
         </div>
       </div>
+
     {% endif %}
   </nav>
 </div> 

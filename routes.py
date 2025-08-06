@@ -429,8 +429,30 @@ def report(pid):
     
     return render_template("report.html", already=existing_report is not None, post=post)
 
+@routes_bp.route("/admin/search-filter", methods=["GET"])
+def admin_search_filter():
+    if session.get("user_role") != "admin":
+        return jsonify({"status": "error", "message": "Unauthorized"}), 403
 
+    keyword = request.args.get("q", "").strip().lower()
+    selected_categories = request.args.getlist("category")  # Allows multiple checkboxes
 
+    # Include all statuses in search/filter
+    statuses = ["Approved", "admin", "Pending", "Declined", "Flagged"]
+    query = Post.query.filter(Post.status.in_(statuses))
 
+    if keyword:
+        query = query.filter(
+            (Post.content.ilike(f"%{keyword}%"))
+        )
+
+    if selected_categories:
+        query = query.filter(Post.category.in_(selected_categories))
+
+    posts = query.order_by(Post.upvotes.desc()).all()
+
+    return render_template("all_posts.html", posts=posts, current_status="Filtered")
+                        
+        
 
 
