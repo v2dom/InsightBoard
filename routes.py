@@ -435,24 +435,33 @@ def admin_search_filter():
         return jsonify({"status": "error", "message": "Unauthorized"}), 403
 
     keyword = request.args.get("q", "").strip().lower()
-    selected_categories = request.args.getlist("category")  # Allows multiple checkboxes
+    selected_categories = request.args.getlist("category")
+    selected_statuses = request.args.getlist("status")
 
-    # Include all statuses in search/filter
-    statuses = ["Approved", "admin", "Pending", "Declined", "Flagged"]
-    query = Post.query.filter(Post.status.in_(statuses))
+    query = Post.query
 
     if keyword:
-        query = query.filter(
-            (Post.content.ilike(f"%{keyword}%"))
-        )
+        query = query.filter(Post.content.ilike(f"%{keyword}%"))
 
     if selected_categories:
         query = query.filter(Post.category.in_(selected_categories))
 
-    posts = query.order_by(Post.upvotes.desc()).all()
+    if selected_statuses:
+        if "All" in selected_statuses:
+            pass
+        else:
+            query = query.filter(Post.status.in_(selected_statuses))
 
-    return render_template("all_posts.html", posts=posts, current_status="Filtered")
-                        
+    posts = query.order_by(Post.submitted_at.desc()).all()
+
+    return render_template(
+        "all_posts.html",
+        posts=posts,
+        selected_statuses=selected_statuses,
+        selected_categories=selected_categories,
+        current_status="Filtered"
+    )
+
         
 
 
