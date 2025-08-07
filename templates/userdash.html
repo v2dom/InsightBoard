@@ -18,10 +18,12 @@
             {% endif %}
           </div>
           <div class="flex space-x-2">
-            {% if post.id not in reported_ids %}
-              <a href="/report/{{ post.id }}" class="btn-report">Report</a>
-            {% else %}
-              <em class="text-sm text-gray-500">You reported this post</em>
+            {% if session.get('user_role') != 'admin' %}
+              {% if post.id not in reported_ids %}
+                <a href="/report/{{ post.id }}" class="btn-report">Report</a>
+              {% else %}
+                <em class="text-sm text-gray-500">You reported this post</em>
+              {% endif %}
             {% endif %}
           </div>
         </div>

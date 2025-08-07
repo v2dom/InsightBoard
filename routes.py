@@ -388,6 +388,11 @@ def report(pid):
         flash("You must be logged in to report posts.", "error")
         return redirect(url_for('auth.login_page'))
     
+    # Prevent admins from reporting posts
+    if session.get("user_role") == "admin":
+        flash("Admin users cannot report posts.", "error")
+        return redirect(url_for('routes.admin_approved'))
+    
     post = Post.query.get_or_404(pid)
     user_id = session.get("user_id")
     

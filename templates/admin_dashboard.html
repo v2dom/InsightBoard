@@ -16,13 +16,15 @@
             <span class="status-badge status-approved">Anonymous</span>
           {% endif %}
         </div>
-        <div class="flex space-x-2">
+              <div class="flex space-x-2">
+        {% if session.get('user_role') != 'admin' %}
           {% if p.id not in reported_ids %}
             <a href="/report/{{ p.id }}" class="btn-report">Report</a>
           {% elif p.id in reported_ids %}
             <em class="text-sm text-gray-500">You reported this post</em>
           {% endif %}
-        </div>
+        {% endif %}
+      </div>
       </div>
 
       <div class="text-sm text-gray-600 mb-1">
