@@ -1,6 +1,6 @@
 from flask import Blueprint, request, render_template, redirect, url_for, flash, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
-from model import User, Post, PostReport
+from model import User, Post, PostReport, UserVote, UserBadge
 from extensions import db
 from datetime import datetime, timedelta, timezone
 import random
@@ -106,7 +106,8 @@ def user_dashboard():
     
     user_id = session["user_id"]
     user_role = session.get("user_role")
-    
+    user = User.query.get(user_id)
+
     # Get all approved posts for the feed (not just user's own)
     feed_posts = Post.query.filter(Post.status.in_(["Approved", "admin"]))\
                           .order_by(Post.upvotes.desc()).all()
@@ -122,10 +123,45 @@ def user_dashboard():
     if user_id:
         reported_posts = [r.post_id for r in PostReport.query.filter_by(reported_by=user_id).all()]
     
-    return render_template("userdash.html", 
-                         feed_posts=feed_posts,
-                         reported_ids=reported_posts,
-                         show_report_count=(user_role == "admin"))
+    user_votes = UserVote.query.filter_by(user_id=user_id).all()
+    user_vote_map = {v.post_id: v.vote_type for v in user_votes}
+
+    badges = UserBadge.query.filter_by(user_id=user_id).all()
+    context = {
+        "feed_posts": feed_posts,
+        "reported_ids": reported_posts,
+        "user_vote_map": user_vote_map,
+        "user_points": user.points,
+        "show_report_count": (user_role == "admin"),
+    }
+
+    if user_role != 'admin':
+        from routes import get_badge_catalog 
+        catalog = get_badge_catalog(user_id)
+        recent = sorted(
+            [b for b in catalog if b["earned"]],
+            key=lambda x: x.get("awarded_at") or datetime.min.replace(tzinfo=timezone.utc),
+            reverse=True
+        )
+
+        # Check if badge was awarded 
+        unlocked = False
+        if recent:
+            latest_award = recent[0].get("awarded_at")
+            if latest_award:
+                now = datetime.now(timezone.utc)
+
+                if latest_award.tzinfo is None:
+                    latest_award = latest_award.replace(tzinfo=timezone.utc)
+
+                unlocked = (now - latest_award).total_seconds() < 10
+        context.update({
+            "badges": catalog,
+            "recent_badges": recent[:2],
+            "achievement_unlocked": unlocked
+        })
+
+    return render_template("userdash.html", **context)
 
 # Show feedback form
 @auth_bp.route('/dashboard/feedback')

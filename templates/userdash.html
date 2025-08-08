@@ -4,6 +4,42 @@
 
 {% block content %}
 <h1 class="text-3xl font-bold text-gray-900 mb-8">Feed</h1>
+<p class="text-lg text-gray-600 mb-8">Total Points: <span id="user-points">{{ user_points }}</span></p>
+
+<div class="mb-8">
+  <div class="flex items-center justify-between mb-2">
+    <h2 class="text-xl font-bold">Recent Badges</h2>
+    <a href="/badges" class="btn btn-success">Go to Badges →</a>
+  </div>
+{% if achievement_unlocked %}
+  <div id="achievement-popup" class="fixed bottom-4 right-4 bg-green-100 text-green-800 px-4 py-3 rounded-lg shadow-lg flex items-center space-x-2 animate-bounce z-50">
+    <span>🏆</span>
+    <span class="font-semibold">Achievement Unlocked!</span>
+  </div>
+
+  <script>
+    setTimeout(() => {
+      const popup = document.getElementById('achievement-popup');
+      if (popup) popup.remove();
+    }, 5000);
+  </script>
+{% endif %}
+
+  {% if recent_badges and recent_badges|length > 0 %}
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-2">
+      {% for b in recent_badges[:3] %}
+        <div class="card flex flex-col items-center p-4 bg-white shadow rounded-lg">
+          <div class="text-2xl font-bold text-blue-600 mb-1">{{ b.emoji }}</div>
+          <div class="font-semibold text-base mb-1">{{ b.name if b.name else b.badge_name }}</div>
+          <div class="text-xs text-gray-500">{{ b.awarded_at.strftime('%b %d, %Y') if b.awarded_at else '' }}</div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-gray-500">No badges yet. Participate to unlock badges!</p>
+  {% endif %}
+</div>
+
 
 <div class="mb-8">
   {% if feed_posts %}
@@ -42,11 +78,37 @@
 
         <p class="text-gray-800 mb-3">{{ post.content }}</p>
 
-        <div class="flex items-center text-sm text-gray-500">
-          <span>↑ {{ post.upvotes or 0 }}</span>
-          <span class="mx-2">|</span>
-          <span>↓ {{ post.downvotes or 0 }}</span>
-        </div>
+<!-- Voting Section -->
+<div class="flex items-center text-sm text-gray-500">
+  <button class="vote-btn upvote-btn" onclick="vote('upvote', '{{ post.id }}', this)">▲</button>
+  <span id="upvotes-{{ post.id }}">{{ post.upvotes or 0 }}</span>
+
+  <span class="mx-2">|</span>
+
+  <button class="vote-btn downvote-btn" onclick="vote('downvote', '{{ post.id }}', this)">▼</button>
+  <span id="downvotes-{{ post.id }}">{{ post.downvotes or 0 }}</span>
+</div>
+
+<!-- Voting Style -->
+<style>
+  .vote-btn {
+    font-size: 1.4em;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #555;
+    transition: color 0.2s;
+  }
+
+  .vote-btn.upvoted {
+    color: green;
+  }
+
+  .vote-btn.downvoted {
+    color: red;
+  }
+</style>
+
       </div>
     {% else %}
       <p class="text-gray-500">No posts in feed yet.</p>
@@ -55,4 +117,72 @@
     <p class="text-gray-500">No posts in feed yet.</p>
   {% endif %}
 </div>
+
+{% block scripts %}
+<script>
+  function vote(type, postId, btn) {
+    fetch(`/${type}/${postId}`, {method: 'POST'})
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById(`upvotes-${postId}`).innerText = data.upvotes;
+      document.getElementById(`downvotes-${postId}`).innerText = data.downvotes;
+
+      const upBtn = btn.parentElement.querySelector('.upvote-btn');
+      const downBtn = btn.parentElement.querySelector('.downvote-btn');
+
+      // Update total points
+      if (data.points !== undefined && document.getElementById('user-points')) {
+        document.getElementById('user-points').innerText = data.points;
+      }
+
+      // Toggle vote button styles
+      if (type === 'upvote') {
+        if (upBtn.classList.contains('upvoted')) {
+          upBtn.classList.remove('upvoted');
+        } else {
+          upBtn.classList.add('upvoted');
+          downBtn.classList.remove('downvoted');
+        }
+      }
+
+      if (type === 'downvote') {
+        if (downBtn.classList.contains('downvoted')) {
+          downBtn.classList.remove('downvoted');
+        } else {
+          downBtn.classList.add('downvoted');
+          upBtn.classList.remove('upvoted');
+        }
+      }
+
+      if (data.user_points !== undefined) {
+        const pointsDisplay = document.getElementById('user-points');
+        if (pointsDisplay) {
+          pointsDisplay.innerText = data.user_points;
+        }
+      }
+    })
+    .catch(err => console.error("Vote error:", err));
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    fetch('/api/user_votes')
+      .then(res => res.json())
+      .then(votes => {
+        Object.entries(votes).forEach(([postId, voteType]) => {
+          const upBtn = document.querySelector(`.upvote-btn[onclick*='${postId}']`);
+          const downBtn = document.querySelector(`.downvote-btn[onclick*='${postId}']`);
+          if (upBtn && downBtn) {
+            if (voteType === 'upvote') {
+              upBtn.classList.add('upvoted');
+              downBtn.classList.remove('downvoted');
+            } else if (voteType === 'downvote') {
+              downBtn.classList.add('downvoted');
+              upBtn.classList.remove('upvoted');
+            }
+          }
+        });
+      });
+  });
+</script>
+{% endblock %}
 {% endblock %}

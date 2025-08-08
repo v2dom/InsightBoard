@@ -6,7 +6,7 @@ import pathlib
 import html
 from datetime import datetime, timezone
 from extensions import db
-from model import Post, PostReport
+from model import Post, PostReport, UserVote, User, Achievement, UserBadge
 
 
 routes_bp = Blueprint('routes', __name__)
@@ -15,7 +15,94 @@ routes_bp = Blueprint('routes', __name__)
 def home():
     return render_template('index.html')
 
-    
+def award_badge(user_id, badge_name):
+    user = User.query.get(user_id)
+    if not user or user.role == 'admin':
+        return
+    if not UserBadge.query.filter_by(user_id=user_id, badge_name=badge_name).first():
+        db.session.add(UserBadge(user_id=user_id, badge_name=badge_name))
+        db.session.commit()
+
+def check_and_award_vote_badges(user_id):
+    vote_count = UserVote.query.filter_by(user_id=user_id).count()
+    if vote_count >= 1:
+        award_badge(user_id, 'First Vote')
+    if vote_count >= 10:
+        award_badge(user_id, '10 Votes')
+    if vote_count >= 50:
+        award_badge(user_id, '50 Votes')
+
+def check_and_award_submission_badges(user_id):
+    submission_count = Post.query.filter_by(created_by=user_id).count()
+    if submission_count >= 1:
+        award_badge(user_id, 'First Submission')
+    if submission_count >= 10:
+        award_badge(user_id, '10 Submissions')
+    if submission_count >= 50:
+        award_badge(user_id, '50 Submissions')
+
+def check_and_award_approved_post_badges(user_id):
+    approved_count = Post.query.filter_by(created_by=user_id, status='Approved').count()
+    if approved_count >= 1:
+        award_badge(user_id, 'First Post')
+    if approved_count >= 10:
+        award_badge(user_id, '10 Posts')
+    if approved_count >= 50:
+        award_badge(user_id, '50 Posts')
+
+def _get_counts_for_user(user_id: int):
+    vote_count = UserVote.query.filter_by(user_id=user_id).count()
+    submission_count = Post.query.filter_by(created_by=user_id).count()
+    approved_count = Post.query.filter_by(created_by=user_id, status='Approved').count()
+    return vote_count, submission_count, approved_count
+
+def get_badge_catalog(user_id: int):
+    """Return a catalog of all badges with earned flag and progress for the given user."""
+    vote_count, submission_count, approved_count = _get_counts_for_user(user_id)
+    earned = {b.badge_name: b for b in UserBadge.query.filter_by(user_id=user_id).all()}
+
+    definitions = [
+        {"name": "First Vote", "category": "votes", "threshold": 1},
+        {"name": "10 Votes", "category": "votes", "threshold": 10},
+        {"name": "50 Votes", "category": "votes", "threshold": 50},
+        {"name": "First Submission", "category": "submissions", "threshold": 1},
+        {"name": "10 Submissions", "category": "submissions", "threshold": 10},
+        {"name": "50 Submissions", "category": "submissions", "threshold": 50},
+        {"name": "First Post", "category": "approved", "threshold": 1},
+        {"name": "10 Posts", "category": "approved", "threshold": 10},
+        {"name": "50 Posts", "category": "approved", "threshold": 50},
+    ]
+
+    def current_for(cat):
+        if cat == 'votes':
+            return vote_count
+        if cat == 'submissions':
+            return submission_count
+        if cat == 'approved':
+            return approved_count
+        return 0
+
+    def emoji_for_threshold(threshold: int):
+        if threshold >= 50:
+            return "🥇"
+        if threshold >= 10:
+            return "🥈"
+        return "🥉"
+
+    catalog = []
+    for d in definitions:
+        badge_obj = earned.get(d["name"]) if d["name"] in earned else None
+        catalog.append({
+            "name": d["name"],
+            "category": d["category"],
+            "threshold": d["threshold"],
+            "current": min(current_for(d["category"]), d["threshold"]),
+            "earned": d["name"] in earned,
+            "awarded_at": getattr(badge_obj, 'awarded_at', None),
+            "emoji": emoji_for_threshold(d["threshold"]) 
+        })
+    return catalog
+   
 @routes_bp.route("/submit-feedback", methods=["POST"])
 def submit_feedback():
     if not session.get("user_id"):
@@ -43,7 +130,7 @@ def submit_feedback():
 
     db.session.add(new_post)
     db.session.commit()
-
+    check_and_award_submission_badges(new_post.created_by)
     return jsonify({"status": "success", "message": "Thank you for your feedback! It has been submitted and is now pending approval."})
 
 
@@ -165,6 +252,7 @@ def approve_post(pid):
     post.reviewed_at = datetime.now(timezone.utc)
     post.review_msg = "Approved ✅"
     db.session.commit()
+    check_and_award_approved_post_badges(post.created_by)
     return redirect(url_for('routes.admin_pending'))
 
 @routes_bp.route("/admin/decline/<int:pid>", methods=["POST"])
@@ -380,7 +468,16 @@ def submit():
 def badges():
     if not session.get("user_id"):
         return redirect(url_for('auth.login_page'))
-    return render_template("badges.html")
+    if session.get('user_role') == 'admin':
+        return redirect(url_for('routes.admin_dashboard'))
+    user_id = session.get("user_id")
+    badge_catalog = get_badge_catalog(user_id)
+    earned_sorted = sorted(
+        [b for b in badge_catalog if b["earned"]],
+        key=lambda x: x.get("awarded_at") or datetime.min.replace(tzinfo=timezone.utc),
+        reverse=True
+    )
+    return render_template("badges.html", badge_catalog=badge_catalog, earned_badges=earned_sorted)
 
 @routes_bp.route("/report/<int:pid>", methods=["GET", "POST"])
 def report(pid):
@@ -466,7 +563,73 @@ def admin_search_filter():
         selected_categories=selected_categories,
         current_status="Filtered"
     )
+@routes_bp.route('/upvote/<int:post_id>', methods=['POST'], endpoint='upvote_post')
+def upvote_post(post_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not logged in'}), 403
 
-        
+    user_id = session['user_id']
+    user = User.query.get_or_404(user_id)
+    post = Post.query.get_or_404(post_id)
+
+    existing_vote = UserVote.query.filter_by(user_id=user_id, post_id=post_id).first()
+
+    if existing_vote:
+        if existing_vote.vote_type == 'upvote':
+            db.session.delete(existing_vote)
+            post.upvotes -= 1
+            user.points -= 1
+        else:
+            existing_vote.vote_type = 'upvote'
+            post.upvotes += 1
+            post.downvotes = max(0, post.downvotes - 1)
+            existing_vote.vote_type = 'upvote'
+            user.points += 1
+    else:
+        db.session.add(UserVote(user_id=user_id, post_id=post_id, vote_type='upvote'))
+        post.upvotes += 1
+        user.points += 1
+
+    db.session.commit()
+    check_and_award_vote_badges(user_id)
+    return jsonify({'upvotes': post.upvotes, 'downvotes': post.downvotes, 'points': user.points})
 
 
+@routes_bp.route('/downvote/<int:post_id>', methods=['POST'])
+def downvote_post(post_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not logged in'}), 403
+
+    user_id = session['user_id']
+    user = User.query.get_or_404(user_id)
+    post = Post.query.get_or_404(post_id)
+
+    existing_vote = UserVote.query.filter_by(user_id=user_id, post_id=post_id).first()
+
+    if existing_vote:
+        if existing_vote.vote_type == 'downvote':
+            db.session.delete(existing_vote)
+            post.downvotes = max(0, post.downvotes - 1)
+            user.points = max(0, user.points - 1)
+        else:
+            existing_vote.vote_type = 'downvote'
+            post.upvotes = max(0, post.upvotes - 1)
+            post.downvotes += 1
+            user.points += 1
+    else:
+        db.session.add(UserVote(user_id=user_id, post_id=post_id, vote_type='downvote'))
+        post.downvotes += 1
+        user.points += 1
+
+    db.session.commit()
+    check_and_award_vote_badges(user_id)
+    return jsonify({'upvotes': post.upvotes, 'downvotes': post.downvotes, 'points': user.points})
+
+@routes_bp.route('/api/user_votes', methods=['GET'])
+def get_user_votes():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'Not logged in'}), 403
+    votes = UserVote.query.filter_by(user_id=user_id).all()
+    votes_dict = {vote.post_id: vote.vote_type for vote in votes}
+    return jsonify(votes_dict)
