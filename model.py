@@ -20,7 +20,7 @@ class Post(db.Model):
     __tablename__ = 'posts'
 
     id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.Text)
+    content = db.Column(db.Text, nullable=False)
     category = db.Column(db.String(50))
     status = db.Column(db.String(20))
     created_at = db.Column(db.DateTime)
@@ -52,6 +52,16 @@ class PostReport(db.Model):
     
     # Ensure one user can only report a post once
     __table_args__ = (db.UniqueConstraint('post_id', 'reported_by', name='unique_user_post_report'),)
+
+class UserVote(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, nullable=False)
+    post_id = db.Column(db.Integer, nullable=False)
+    vote_type = db.Column(db.String(10), nullable=False)  # 'upvote' or 'downvote'
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'post_id', name='unique_user_post_vote'),
+    )
 
 
 

@@ -42,11 +42,76 @@
 
         <p class="text-gray-800 mb-3">{{ post.content }}</p>
 
-        <div class="flex items-center text-sm text-gray-500">
-          <span>↑ {{ post.upvotes or 0 }}</span>
-          <span class="mx-2">|</span>
-          <span>↓ {{ post.downvotes or 0 }}</span>
-        </div>
+<!-- Voting Section -->
+<div class="flex items-center text-sm text-gray-500">
+  <button class="vote-btn upvote-btn" data-id="{{ post.id }}" onclick="vote('upvote', {{ post.id }}, this)">▲</button>
+  <span id="upvotes-{{ post.id }}">{{ post.upvotes or 0 }}</span>
+
+  <span class="mx-2">|</span>
+
+  <button class="vote-btn downvote-btn" data-id="{{ post.id }}" onclick="vote('downvote', {{ post.id }}, this)">▼</button>
+  <span id="downvotes-{{ post.id }}">{{ post.downvotes or 0 }}</span>
+</div>
+
+<!-- Voting Style -->
+<style>
+  .vote-btn {
+    font-size: 1.4em;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #555;
+    transition: color 0.2s;
+  }
+
+  .vote-btn.upvoted {
+    color: green;
+  }
+
+  .vote-btn.downvoted {
+    color: red;
+  }
+</style>
+
+<!-- Voting Script -->
+<script>
+function vote(type, postId, btn) {
+  const key = `vote-${postId}`;
+  const prevVote = localStorage.getItem(key);
+
+  // Same button clicked again → unvote
+  const isUnvote = prevVote === type;
+  const url = `/${type}/${postId}`;
+  const isUpvote = type === 'upvote';
+
+  fetch(url, {
+    method: 'POST'
+  })
+  .then(res => res.json())
+  .then(data => {
+    const upBtn = document.querySelector(`.upvote-btn[data-id='${postId}']`);
+    const downBtn = document.querySelector(`.downvote-btn[data-id='${postId}']`);
+
+    // Update counts
+    document.getElementById(`upvotes-${postId}`).innerText = data.upvotes;
+    document.getElementById(`downvotes-${postId}`).innerText = data.downvotes;
+
+    // Clear all highlights first
+    upBtn.classList.remove('upvoted');
+    downBtn.classList.remove('downvoted');
+
+    if (isUnvote) {
+      localStorage.removeItem(key); // unvoted
+    } else {
+      localStorage.setItem(key, type); // store current vote
+      if (isUpvote) upBtn.classList.add('upvoted');
+      else downBtn.classList.add('downvoted');
+    }
+  })
+  .catch(err => console.error("Vote error:", err));
+}
+</script>
+
       </div>
     {% else %}
       <p class="text-gray-500">No posts in feed yet.</p>

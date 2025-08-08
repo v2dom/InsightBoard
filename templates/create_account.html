@@ -66,7 +66,7 @@ document.getElementById("createAccountForm").addEventListener("submit", async fu
   const message = document.getElementById("message");
 
   try {
-    const response = await fetch("/create-account", {
+    const response = await fetch("/admin/create-account", {
       method: "POST",
       body: formData
     });
