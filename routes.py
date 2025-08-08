@@ -532,3 +532,12 @@ def downvote_post(post_id):
 
 
     return jsonify({'upvotes': post.upvotes, 'downvotes': post.downvotes, 'points': user.points})
+
+@routes_bp.route('/api/user_votes', methods=['GET'])
+def get_user_votes():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'Not logged in'}), 403
+    votes = UserVote.query.filter_by(user_id=user_id).all()
+    votes_dict = {vote.post_id: vote.vote_type for vote in votes}
+    return jsonify(votes_dict)
