@@ -11,6 +11,19 @@
     <h2 class="text-xl font-bold">Recent Badges</h2>
     <a href="/badges" class="btn btn-success">Go to Badges →</a>
   </div>
+{% if achievement_unlocked %}
+  <div id="achievement-popup" class="fixed bottom-4 right-4 bg-green-100 text-green-800 px-4 py-3 rounded-lg shadow-lg flex items-center space-x-2 animate-bounce z-50">
+    <span>🏆</span>
+    <span class="font-semibold">Achievement Unlocked!</span>
+  </div>
+
+  <script>
+    setTimeout(() => {
+      const popup = document.getElementById('achievement-popup');
+      if (popup) popup.remove();
+    }, 5000);
+  </script>
+{% endif %}
 
   {% if recent_badges and recent_badges|length > 0 %}
   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-2">

@@ -6,7 +6,7 @@ import pathlib
 import html
 from datetime import datetime, timezone
 from extensions import db
-from model import Post, PostReport, UserVote, User, UserBadge
+from model import Post, PostReport, UserVote, User, Achievement, UserBadge
 
 
 routes_bp = Blueprint('routes', __name__)
@@ -15,7 +15,6 @@ routes_bp = Blueprint('routes', __name__)
 def home():
     return render_template('index.html')
 
-    
 def award_badge(user_id, badge_name):
     user = User.query.get(user_id)
     if not user or user.role == 'admin':
@@ -103,7 +102,7 @@ def get_badge_catalog(user_id: int):
             "emoji": emoji_for_threshold(d["threshold"]) 
         })
     return catalog
-
+   
 @routes_bp.route("/submit-feedback", methods=["POST"])
 def submit_feedback():
     if not session.get("user_id"):

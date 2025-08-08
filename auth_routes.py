@@ -142,10 +142,23 @@ def user_dashboard():
             [b for b in catalog if b["earned"]],
             key=lambda x: x.get("awarded_at") or datetime.min.replace(tzinfo=timezone.utc),
             reverse=True
-        )[:2]
+        )
+
+        # Check if badge was awarded 
+        unlocked = False
+        if recent:
+            latest_award = recent[0].get("awarded_at")
+            if latest_award:
+                now = datetime.now(timezone.utc)
+
+                if latest_award.tzinfo is None:
+                    latest_award = latest_award.replace(tzinfo=timezone.utc)
+
+                unlocked = (now - latest_award).total_seconds() < 10
         context.update({
             "badges": catalog,
-            "recent_badges": recent,
+            "recent_badges": recent[:2],
+            "achievement_unlocked": unlocked
         })
 
     return render_template("userdash.html", **context)
