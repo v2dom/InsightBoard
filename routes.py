@@ -6,7 +6,7 @@ import pathlib
 import html
 from datetime import datetime, timezone
 from extensions import db
-from model import Post, PostReport, UserVote
+from model import Post, PostReport, UserVote, User
 
 
 routes_bp = Blueprint('routes', __name__)
@@ -466,54 +466,69 @@ def admin_search_filter():
         selected_categories=selected_categories,
         current_status="Filtered"
     )
-@routes_bp.route('/downvote/<int:post_id>', methods=['POST'], endpoint='downvote_post')
-def downvote_post(post_id):
-    post = Post.query.get_or_404(post_id)
-    user_id = session.get("user_id")
-
-    if not user_id:
-        return jsonify({"error": "Login required"}), 401
-
-    existing_vote = UserVote.query.filter_by(user_id=user_id, post_id=post_id).first()
-
-    if existing_vote:
-        if existing_vote.vote_type == 'downvote':
-            post.downvotes = max(0, post.downvotes - 1)
-            db.session.delete(existing_vote)
-        else:
-            post.upvotes = max(0, post.upvotes - 1)
-            post.downvotes += 1
-            existing_vote.vote_type = 'downvote'
-    else:
-        post.downvotes += 1
-        new_vote = UserVote(user_id=user_id, post_id=post_id, vote_type='downvote')
-        db.session.add(new_vote)
-
-    db.session.commit()
-    return jsonify({'upvotes': post.upvotes, 'downvotes': post.downvotes})
-
 @routes_bp.route('/upvote/<int:post_id>', methods=['POST'], endpoint='upvote_post')
 def upvote_post(post_id):
-    post = Post.query.get_or_404(post_id)
-    user_id = session.get("user_id")
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not logged in'}), 403
 
-    if not user_id:
-        return jsonify({"error": "Login required"}), 401
+    user_id = session['user_id']
+    user = User.query.get_or_404(user_id)
+    post = Post.query.get_or_404(post_id)
+
 
     existing_vote = UserVote.query.filter_by(user_id=user_id, post_id=post_id).first()
 
     if existing_vote:
         if existing_vote.vote_type == 'upvote':
-            post.upvotes = max(0, post.upvotes - 1)
+            # unvote
             db.session.delete(existing_vote)
+            post.upvotes -= 1
+            user.points -= 1
         else:
-            post.downvotes = max(0, post.downvotes - 1)
-            post.upvotes += 1
             existing_vote.vote_type = 'upvote'
+            post.upvotes += 1
+            post.downvotes = max(0, post.downvotes - 1)
+
+            existing_vote.vote_type = 'upvote'
+            user.points += 1
     else:
+        db.session.add(UserVote(user_id=user_id, post_id=post_id, vote_type='upvote'))
         post.upvotes += 1
-        new_vote = UserVote(user_id=user_id, post_id=post_id, vote_type='upvote')
-        db.session.add(new_vote)
+        user.points += 1
 
     db.session.commit()
-    return jsonify({'upvotes': post.upvotes, 'downvotes': post.downvotes})
+
+    return jsonify({'upvotes': post.upvotes, 'downvotes': post.downvotes, 'points': user.points})
+
+
+@routes_bp.route('/downvote/<int:post_id>', methods=['POST'])
+def downvote_post(post_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not logged in'}), 403
+
+    user_id = session['user_id']
+    user = User.query.get_or_404(user_id)
+    post = Post.query.get_or_404(post_id)
+
+    existing_vote = UserVote.query.filter_by(user_id=user_id, post_id=post_id).first()
+
+    if existing_vote:
+        if existing_vote.vote_type == 'downvote':
+            db.session.delete(existing_vote)
+
+            post.downvotes = max(0, post.downvotes - 1)
+            user.points = max(0, user.points - 1)
+        else:
+            existing_vote.vote_type = 'downvote'
+            post.upvotes = max(0, post.upvotes - 1)
+            post.downvotes += 1
+            user.points += 1
+    else:
+        db.session.add(UserVote(user_id=user_id, post_id=post_id, vote_type='downvote'))
+        post.downvotes += 1
+        user.points += 1
+
+    db.session.commit()
+
+
+    return jsonify({'upvotes': post.upvotes, 'downvotes': post.downvotes, 'points': user.points})

@@ -11,6 +11,7 @@ class User(db.Model):
     role = db.Column(db.String(50), default='user')
     failed_attempts = db.Column(db.Integer, default=0)
     locked_until = db.Column(db.DateTime, nullable=True)
+    points = db.Column(db.Integer, default=0)
 
     def __repr__(self):
         return f'<User {self.name}>'

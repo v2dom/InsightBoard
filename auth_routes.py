@@ -1,6 +1,6 @@
 from flask import Blueprint, request, render_template, redirect, url_for, flash, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
-from model import User, Post, PostReport
+from model import User, Post, PostReport, UserVote
 from extensions import db
 from datetime import datetime, timedelta, timezone
 import random
@@ -106,7 +106,8 @@ def user_dashboard():
     
     user_id = session["user_id"]
     user_role = session.get("user_role")
-    
+    user = User.query.get(user_id)
+
     # Get all approved posts for the feed (not just user's own)
     feed_posts = Post.query.filter(Post.status.in_(["Approved", "admin"]))\
                           .order_by(Post.upvotes.desc()).all()
@@ -122,9 +123,14 @@ def user_dashboard():
     if user_id:
         reported_posts = [r.post_id for r in PostReport.query.filter_by(reported_by=user_id).all()]
     
+    user_votes = UserVote.query.filter_by(user_id=user_id).all()
+    user_vote_map = {v.post_id: v.vote_type for v in user_votes}
+
     return render_template("userdash.html", 
                          feed_posts=feed_posts,
                          reported_ids=reported_posts,
+                         user_vote_map=user_vote_map,
+                         user_points=user.points,
                          show_report_count=(user_role == "admin"))
 
 # Show feedback form
