@@ -1,6 +1,6 @@
 from flask import Blueprint, request, render_template, redirect, url_for, flash, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
-from model import User, Post, PostReport, UserVote
+from model import User, Post, PostReport, UserVote, UserBadge
 from extensions import db
 from datetime import datetime, timedelta, timezone
 import random
@@ -126,12 +126,29 @@ def user_dashboard():
     user_votes = UserVote.query.filter_by(user_id=user_id).all()
     user_vote_map = {v.post_id: v.vote_type for v in user_votes}
 
-    return render_template("userdash.html", 
-                         feed_posts=feed_posts,
-                         reported_ids=reported_posts,
-                         user_vote_map=user_vote_map,
-                         user_points=user.points,
-                         show_report_count=(user_role == "admin"))
+    badges = UserBadge.query.filter_by(user_id=user_id).all()
+    context = {
+        "feed_posts": feed_posts,
+        "reported_ids": reported_posts,
+        "user_vote_map": user_vote_map,
+        "user_points": user.points,
+        "show_report_count": (user_role == "admin"),
+    }
+
+    if user_role != 'admin':
+        from routes import get_badge_catalog 
+        catalog = get_badge_catalog(user_id)
+        recent = sorted(
+            [b for b in catalog if b["earned"]],
+            key=lambda x: x.get("awarded_at") or datetime.min.replace(tzinfo=timezone.utc),
+            reverse=True
+        )[:2]
+        context.update({
+            "badges": catalog,
+            "recent_badges": recent,
+        })
+
+    return render_template("userdash.html", **context)
 
 # Show feedback form
 @auth_bp.route('/dashboard/feedback')

@@ -65,4 +65,12 @@ class UserVote(db.Model):
     )
 
 
+class UserBadge(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    badge_name = db.Column(db.String(50), nullable=False)
+    awarded_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    __table_args__ = (db.UniqueConstraint('user_id', 'badge_name', name='unique_user_badge'),)
+
+
 

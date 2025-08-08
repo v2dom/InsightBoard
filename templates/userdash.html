@@ -7,6 +7,31 @@
 <p class="text-lg text-gray-600 mb-8">Total Points: <span id="user-points">{{ user_points }}</span></p>
 
 <div class="mb-8">
+  <div class="flex items-center justify-between mb-2">
+    <h2 class="text-xl font-bold">Recent Badges</h2>
+    <a href="/badges" class="btn btn-success">Go to Badges →</a>
+  </div>
+
+  {% if recent_badges and recent_badges|length > 0 %}
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-2">
+      {% for b in recent_badges[:3] %}
+        <div class="card flex flex-col items-center p-4 bg-white shadow rounded-lg">
+          <div class="text-2xl font-bold text-blue-600 mb-1">{{ b.emoji }}</div>
+          <div class="font-semibold text-base mb-1">{{ b.name if b.name else b.badge_name }}</div>
+          <div class="text-xs text-gray-500">{{ b.awarded_at.strftime('%b %d, %Y') if b.awarded_at else '' }}</div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="flex items-center justify-between">
+      <p class="text-gray-500">No badges yet. Participate to unlock badges!</p>
+      <a href="/badges" class="btn btn-success">Go to Badges →</a>
+    </div>
+  {% endif %}
+</div>
+
+
+<div class="mb-8">
   {% if feed_posts %}
     {% for post in feed_posts %}
       <div class="card">
