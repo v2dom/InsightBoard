@@ -1,7 +1,7 @@
 # InsightBoard
 
 ## 🚀 The Vision
-InsightBoard is a modern feedback platform built to replace outdated employee surveys with a space that feels natural, engaging, and safe. Inspired by the community-driven format of Reddit, it gives employees a voice — and leaders the insights they need — without the barriers of traditional survey tools.
+InsightBoard is a modern feedback platform built to replace outdated employee surveys with a space that feels natural, engaging, and safe. Inspired by the community-driven format of Reddit, it gives employees a voice and leaders the insights they need without the barriers of traditional survey tools.
 
 ## ✨ Core Features
 - **Anonymous Feedback** – Share ideas, suggestions, or concerns without fear of retaliation.
@@ -11,7 +11,6 @@ InsightBoard is a modern feedback platform built to replace outdated employee su
   - **Admin Dashboard** – Approve or deny posts, manage pending submissions, and ensure content quality.
 - **Content Moderation** – Admin controls to remove inappropriate posts and maintain a constructive environment.
 - **Persistent Data** – All feedback is stored in a secure database for retrieval and reporting.
-- **Responsive Interface** – Optimized for both desktop and mobile browsers.
 
 ## 🛠 Tech Stack
 - **Backend:** Flask (Python)  
