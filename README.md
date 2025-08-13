@@ -45,7 +45,7 @@ InsightBoard is a modern feedback platform built to replace outdated employee su
     flask run
     ```
 
-## 📸 Pitch
+## 📸 Pitch / Demo
 https://docs.google.com/presentation/d/1TkWyY4RRbUriOxdPkLdpftpb9Pln6G13D3XdUfW9h3c/edit?slide=id.p#slide=id.p
 
 
